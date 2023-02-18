@@ -1,0 +1,47 @@
+{
+  "name": "streamii",
+  "version": "0.0.1",
+  "description": "Run a 24/7 livestream on YouTube, Twitch, or any streaming service",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "npm run prepare && ./node_modules/mocha/bin/mocha test/ --recursive --timeout=10000",
+    "prepare": "node -e 'require(`prepare-package`)()'"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itw-creative-works/streamii.git"
+  },
+  "keywords": [
+    "livestream",
+    "livestreaming",
+    "backend"
+  ],
+  "author": "ITW Creative Works",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/itw-creative-works/streamii/issues"
+  },
+  "homepage": "https://itwcreativeworks.com",
+  "dependencies": {
+    "@fastify/multipart": "^7.4.1",
+    "@fastify/static": "^6.9.0",
+    "@octokit/rest": "^19.0.7",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.3",
+    "dotenv": "^16.0.3",
+    "fastify": "^4.13.0",
+    "ffmpeg-static": "^5.1.0",
+    "ffprobe-static": "^3.1.0",
+    "fs-jetpack": "^5.1.0",
+    "node-powertools": "^0.0.23",
+    "ora": "^5.4.1",
+    "unzipper": "^0.10.11"
+  },  
+  "devDependencies": {
+    "mocha": "^8.4.0",
+    "prepare-package": "^0.0.16"
+  }
+}
