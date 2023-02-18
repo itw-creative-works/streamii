@@ -177,6 +177,11 @@ module.exports = function (mainOptions) {
       // const owner = package.repository.url.split('/')[3];
       // const repo = package.repository.url.split('/')[4].replace('.git', '');
 
+      if (mainOptions.assets.fetch === false) {
+        console.error('Skipping download of assets...');
+        return resolve();
+      }
+
       console.log('Downloading assets...', mainOptions.assets.owner, mainOptions.assets.repo);
 
       // Clear the uploadds directory
