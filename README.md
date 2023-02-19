@@ -72,6 +72,11 @@ Zip and upload your stream assets to the same GitHub repository as release asset
 ```
 The module will automatically download the release assets and use them in the stream.
 
+## TODO
+* Clean old audio files
+  * When downloading the `.zip` file, extract and make a list of the extracted files in the unprocessed folder called `uploads/contents.txt` with the names of the files. After the download completes, wait like 10 minutes (so current song can finish) and the loop through the unprocessed audio as well as the processed audio and remove any audio files that are not in the `contents.txt` as a way of clearing out any old audio files
+
+
 ## Final Words
 If you are still having difficulty, we would love for you to post a question to [the Streamii issues page](https://github.com/itw-creative-works/streamii/issues). It is much easier to answer questions that include your code and relevant files! So if you can provide them, we'd be extremely grateful (and more likely to help you find the answer!)
 
