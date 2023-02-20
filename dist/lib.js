@@ -21,7 +21,14 @@ module.exports = function (mainOptions) {
   const Table = require('cli-table3');
   const chalk = require('chalk');
 
-  const logger = require('./logger.js');
+  const logger = new (require('wonderful-log'))({
+    console: {
+      enabled: true,
+    },
+    file: {
+      enabled: true,
+    },
+  });  
 
   const queue = powertools.queue();
   const status = {
@@ -136,7 +143,7 @@ module.exports = function (mainOptions) {
       });
 
       ffmpegProcess.on('close', (code) => {
-        logger.info(`STREAM: ffmpeg exited with code ${code}`);
+        logger.log(`STREAM: ffmpeg exited with code ${code}`);
 
         status.isStreaming = false;
 
@@ -178,11 +185,11 @@ module.exports = function (mainOptions) {
       // const repo = package.repository.url.split('/')[4].replace('.git', '');
 
       if (mainOptions.assets.fetch === false) {
-        logger.info('Skipping download of assets...');
+        logger.log('Skipping download of assets...');
         return resolve();
       }
 
-      logger.info(`Downloading assets ${mainOptions.assets.owner}, ${mainOptions.assets.repo}`);
+      logger.log(`Downloading assets ${mainOptions.assets.owner}, ${mainOptions.assets.repo}`);
 
       // Clear the uploadds directory
       jetpack.remove('media/uploads');   
@@ -200,7 +207,7 @@ module.exports = function (mainOptions) {
         const assetName = asset.name;
         const assetUrl = asset.browser_download_url;
 
-        logger.info(`Downloading asset: ${assetName}`);
+        logger.log(`Downloading asset: ${assetName}`);
 
         const assetPath = path.join('media', 'uploads', assetName);
         const assetDir = path.dirname(assetPath);
@@ -220,7 +227,7 @@ module.exports = function (mainOptions) {
           }
         });
 
-        logger.info(`Finished downloading asset: ${assetPath}`);
+        logger.log(`Finished downloading asset: ${assetPath}`);
 
         // Save ArrayBuffer to disk as a file
         const buffer = Buffer.from(response.data);
@@ -249,7 +256,7 @@ module.exports = function (mainOptions) {
       // Clear the unprocessed directory
       // jetpack.remove('media/unprocessed');    
 
-      // logger.info('Unzipping uploads...', uploadFile);
+      // logger.log('Unzipping uploads...', uploadFile);
 
       // Unzip the file
       const readStream = jetpack.createReadStream(uploadFile);
@@ -421,7 +428,7 @@ module.exports = function (mainOptions) {
       `
       const saveTracklistInterval = setInterval(saveTracklist, 10000);
 
-      logger.info('Preprocessing audio files...');
+      logger.log('Preprocessing audio files...');
 
       function _resolve() {
         clearInterval(saveTracklistInterval);
@@ -462,7 +469,7 @@ module.exports = function (mainOptions) {
       });
 
       ffmpegProcess.on('close', (code) => {
-        logger.info(`PROCESS: ffmpeg exited wtih code ${code}`);
+        logger.log(`PROCESS: ffmpeg exited wtih code ${code}`);
 
         status.isProcessing = false;
 
@@ -592,11 +599,12 @@ module.exports = function (mainOptions) {
     jetpack.dir('media/processed/video');
     jetpack.dir('media/uploads');
 
-    logger.info(`\n\n============================================`);
-    logger.info(`Streamii server has successfully started`);
-    logger.info(`Streamii v${package.version}`);
-    logger.info(`Server is listening on ${address}`);
-    logger.info(`============================================`);
+    logger.log(`d`);
+    logger.log(`============================================`);
+    logger.log(`Streamii server has successfully started`);
+    logger.log(`Streamii v${package.version}`);
+    logger.log(`Server is listening on ${address}`);
+    logger.log(`============================================`);
 
     // Randomize the tracklist and start the stream
     startStream()
@@ -636,7 +644,7 @@ module.exports = function (mainOptions) {
         const tracklist = getTracklist();
         const currentTrack = getCurrentTrack();
 
-        logger.info(
+        logger.log(
           `\n`
           + `Stream: ${status.isStreaming ? 'ON' : 'OFF'} ${status.isStreaming ? status.isStreaming : ''}\n`
           + `Preprocess: ${status.isProcessing ? 'ON' : 'OFF'} ${status.isProcessing ? status.isProcessing : ''}\n`
@@ -645,7 +653,6 @@ module.exports = function (mainOptions) {
         )
         
       }, 60000);
-
 
       // const table = new Table({
       //   head: [chalk.cyan.bold('Process'), chalk.cyan.bold('Status'), chalk.cyan.bold('Detail')],
