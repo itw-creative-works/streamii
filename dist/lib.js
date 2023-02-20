@@ -594,7 +594,7 @@ module.exports = function (mainOptions) {
 
     logger.info(`\n\n============================================`);
     logger.info(`Streamii server has successfully started`);
-    logger.info(`Streamii v${package.version}}`);
+    logger.info(`Streamii v${package.version}`);
     logger.info(`Server is listening on ${address}`);
     logger.info(`============================================`);
 
