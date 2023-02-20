@@ -28,6 +28,9 @@ module.exports = function (mainOptions) {
     file: {
       enabled: true,
     },
+    // worker: {
+    //   timeout: 10000
+    // },
   });  
 
   const queue = powertools.queue();
@@ -37,7 +40,7 @@ module.exports = function (mainOptions) {
     isProcessing: false,
   }
   let tracklistInterval;
-
+  
   // Check mainOptions
   if (!mainOptions.streamURL) {
     throw new Error('No URL provided')
@@ -543,6 +546,32 @@ module.exports = function (mainOptions) {
     });
   }
 
+  // format uptime to HH:MM:SS
+  function format(seconds) {
+    function pad(s) {
+      return (s < 10 ? '0' : '') + s;
+    }
+    var hours = Math.floor(seconds / (60 * 60));
+    var minutes = Math.floor(seconds % (60 * 60) / 60);
+    var seconds = Math.floor(seconds % 60);
+
+    return pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+  }  
+
+  function logStatus() {
+    const tracklist = getTracklist();
+    const currentTrack = getCurrentTrack();
+
+    logger.log(
+      `\n`
+      + `Runtime: ${format(process.uptime())}\n`
+      + `Stream: ${status.isStreaming ? 'ON' : 'OFF'} ${status.isStreaming ? status.isStreaming : ''}\n`
+      + `Preprocess: ${status.isProcessing ? 'ON' : 'OFF'} ${status.isProcessing ? status.isProcessing : ''}\n`
+      + `Download: ${status.isDownloading ? 'ON' : 'OFF'} ${status.isDownloading ? status.isDownloading : ''}\n`
+      + `Tracklist: ${tracklist.length} tracks\n`
+    )      
+  }
+
   // Serve the upload form
   fastify.get('/', async (request, res) => {
     const tracklist = getTracklist();
@@ -641,17 +670,7 @@ module.exports = function (mainOptions) {
       queue.add(downloadAssets)
 
       setInterval(function() {
-        const tracklist = getTracklist();
-        const currentTrack = getCurrentTrack();
-
-        logger.log(
-          `\n`
-          + `Stream: ${status.isStreaming ? 'ON' : 'OFF'} ${status.isStreaming ? status.isStreaming : ''}\n`
-          + `Preprocess: ${status.isProcessing ? 'ON' : 'OFF'} ${status.isProcessing ? status.isProcessing : ''}\n`
-          + `Download: ${status.isDownloading ? 'ON' : 'OFF'} ${status.isDownloading ? status.isDownloading : ''}\n`
-          + `Tracklist: ${tracklist.length} tracks\n`
-        )
-        
+        logStatus()
       }, 60000);
 
       // const table = new Table({
