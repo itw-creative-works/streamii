@@ -21,6 +21,8 @@ module.exports = function (mainOptions) {
   const Table = require('cli-table3');
   const chalk = require('chalk');
 
+  const logger = require('./logger.js');
+
   const queue = powertools.queue();
   const status = {
     isStreaming: false,
@@ -134,23 +136,21 @@ module.exports = function (mainOptions) {
       });
 
       ffmpegProcess.on('close', (code) => {
-        console.log(`STREAM: ffmpeg exited`, code);
+        logger.info(`STREAM: ffmpeg exited with code ${code}`);
 
         status.isStreaming = false;
 
         // Restart the stream if it fails
         if (code !== 0) {
-          console.error(`Restarting...`);
+          logger.error(`Restarting...`);
+
           setTimeout(function () {
             startYouTubeStream();
           }, 1000);
-
-          return reject();
         }
-
-        return resolve();
       });
 
+      return resolve();
 
       // Use ffprobe to get information about the current stream
       // const ffprobeProcess = exec(`${ffprobe} -v quiet -print_format json -show_format -show_streams rtmp://a.rtmp.youtube.com/live2/${process.env.STREAM_KEY}`);
@@ -178,11 +178,11 @@ module.exports = function (mainOptions) {
       // const repo = package.repository.url.split('/')[4].replace('.git', '');
 
       if (mainOptions.assets.fetch === false) {
-        console.error('Skipping download of assets...');
+        logger.info('Skipping download of assets...');
         return resolve();
       }
 
-      console.log('Downloading assets...', mainOptions.assets.owner, mainOptions.assets.repo);
+      logger.info(`Downloading assets ${mainOptions.assets.owner}, ${mainOptions.assets.repo}`);
 
       // Clear the uploadds directory
       jetpack.remove('media/uploads');   
@@ -200,7 +200,7 @@ module.exports = function (mainOptions) {
         const assetName = asset.name;
         const assetUrl = asset.browser_download_url;
 
-        console.log('Downloading asset:', assetName);
+        logger.info(`Downloading asset: ${assetName}`);
 
         const assetPath = path.join('media', 'uploads', assetName);
         const assetDir = path.dirname(assetPath);
@@ -220,7 +220,7 @@ module.exports = function (mainOptions) {
           }
         });
 
-        console.log('Finished downloading asset:', assetPath);
+        logger.info(`Finished downloading asset: ${assetPath}`);
 
         // Save ArrayBuffer to disk as a file
         const buffer = Buffer.from(response.data);
@@ -249,7 +249,7 @@ module.exports = function (mainOptions) {
       // Clear the unprocessed directory
       // jetpack.remove('media/unprocessed');    
 
-      // console.log('Unzipping uploads...', uploadFile);
+      // logger.info('Unzipping uploads...', uploadFile);
 
       // Unzip the file
       const readStream = jetpack.createReadStream(uploadFile);
@@ -421,7 +421,7 @@ module.exports = function (mainOptions) {
       `
       const saveTracklistInterval = setInterval(saveTracklist, 10000);
 
-      // console.log('Preprocessing audio files...');
+      logger.info('Preprocessing audio files...');
 
       function _resolve() {
         clearInterval(saveTracklistInterval);
@@ -462,7 +462,7 @@ module.exports = function (mainOptions) {
       });
 
       ffmpegProcess.on('close', (code) => {
-        console.log(`PROCESS: ffmpeg exited`, code);
+        logger.info(`PROCESS: ffmpeg exited wtih code ${code}`);
 
         status.isProcessing = false;
 
@@ -582,7 +582,7 @@ module.exports = function (mainOptions) {
   // Run the server and report out to the logs
   fastify.listen({ port: process.env.PORT || 3000, host: '0.0.0.0' }, async function (e, address) {
     if (e) {
-      return console.error(e);
+      return logger.error(e);
     }
 
     // Make sure all directories exist
@@ -592,14 +592,14 @@ module.exports = function (mainOptions) {
     jetpack.dir('media/processed/video');
     jetpack.dir('media/uploads');
 
-    console.log(`\n\n============================================`);
-    console.log(`Server is listening on ${address}`);
-    console.log(`============================================`);
+    logger.info(`\n\n============================================`);
+    logger.info(`Server is listening on ${address}`);
+    logger.info(`============================================`);
 
     // Randomize the tracklist and start the stream
     startYouTubeStream()
     .catch(e => {
-      console.error('Error starting YouTube stream', e)
+      logger.error(`Error starting YouTube stream: ${e}`)
     })
 
     // Setup the tracklist interval
@@ -630,36 +630,51 @@ module.exports = function (mainOptions) {
 
       queue.add(downloadAssets)
 
+      setInterval(function() {
+        const tracklist = getTracklist();
+        const currentTrack = getCurrentTrack();
+
+        logger.info(
+          `\n`
+          + `Stream: ${status.isStreaming ? 'ON' : 'OFF'} ${status.isStreaming ? status.isStreaming : ''}\n`
+          + `Preprocess: ${status.isProcessing ? 'ON' : 'OFF'} ${status.isProcessing ? status.isProcessing : ''}\n`
+          + `Download: ${status.isDownloading ? 'ON' : 'OFF'} ${status.isDownloading ? status.isDownloading : ''}\n`
+          + `Tracklist: ${tracklist.length} tracks\n`
+        )
+        
+      }, 60000);
+
+
       // const table = new Table({
       //   head: [chalk.cyan.bold('Process'), chalk.cyan.bold('Status'), chalk.cyan.bold('Detail')],
       //   colWidths: [15, 'auto', 'auto'],
       // });
 
       // setInterval(function() {
-      //   const tracklist = getTracklist();
-      //   const currentTrack = getCurrentTrack();
+        // const tracklist = getTracklist();
+        // const currentTrack = getCurrentTrack();
+        
+        // table.splice(0);
 
-      //   table.splice(0);
+        // table.push(
+        //   [
+        //     chalk.yellow('Stream'), 
+        //     status.isStreaming ? chalk.green('ON') : chalk.red('OFF'), 
+        //     `${status.isStreaming ? status.isStreaming : ''}`
+        //       .replace(/= /g, '')
+        //       .replace(/ +/g, ' ')          
+        //   ],
+        //   [chalk.yellow('Download'), status.isDownloading ? chalk.green('ON') : chalk.red('OFF'), `${status.isDownloading ? status.isDownloading : ''}`],
+        //   [chalk.yellow('Preprocess'), status.isPreprocessing ? chalk.green('ON') : chalk.red('OFF'), `${status.isPreprocessing ? status.isPreprocessing : ''}`],
+        //   [chalk.yellow('Tracklist'), tracklist.length, `(${currentTrack})`]
+        // );
 
-      //   table.push(
-      //     [
-      //       chalk.yellow('Stream'), 
-      //       status.isStreaming ? chalk.green('ON') : chalk.red('OFF'), 
-      //       `${status.isStreaming ? status.isStreaming : ''}`
-      //         .replace(/= /g, '')
-      //         .replace(/ +/g, ' ')          
-      //     ],
-      //     [chalk.yellow('Download'), status.isDownloading ? chalk.green('ON') : chalk.red('OFF'), `${status.isDownloading ? status.isDownloading : ''}`],
-      //     [chalk.yellow('Preprocess'), status.isPreprocessing ? chalk.green('ON') : chalk.red('OFF'), `${status.isPreprocessing ? status.isPreprocessing : ''}`],
-      //     [chalk.yellow('Tracklist'), tracklist.length, `(${currentTrack})`]
-      //   );
-
-      //   console.clear();
-      //   console.log(table.toString());
+        // console.clear();
+        // console.log(table.toString());
 
       // }, 1000);
 
-    }  
+    }
   });
 
 

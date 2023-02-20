@@ -1,6 +1,6 @@
 {
   "name": "streamii",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Run a 24/7 livestream on YouTube, Twitch, or any streaming service",
   "main": "dist/index.js",
   "scripts": {
@@ -38,7 +38,8 @@
     "fs-jetpack": "^5.1.0",
     "node-powertools": "^0.0.23",
     "ora": "^5.4.1",
-    "unzipper": "^0.10.11"
+    "unzipper": "^0.10.11",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
     "mocha": "^8.4.0",
