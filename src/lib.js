@@ -427,7 +427,8 @@ module.exports = function (mainOptions) {
         for f in media/unprocessed/audio/*.mp3; do
           filename=$(basename "$f")
           ${ffmpeg} -y -i "$f" -map 0:a -ac 2 -ar 44100 -c:a aac "media/processed/audio/\${filename%.*}.m4a"
-        done    
+          rm "$f"
+        done
       `
       const saveTracklistInterval = setInterval(saveTracklist, 10000);
 
@@ -539,9 +540,14 @@ module.exports = function (mainOptions) {
       const newPath = file.replace('unprocessed', 'processed');
       try {
         // @@@
-        jetpack.copy(file, newPath, { overwrite: false });
+        jetpack.move(file, newPath, { overwrite: false });
       } catch (e) {
         // console.error('Did not rename video because already exists');
+      }
+
+      try {
+        jetpack.remove(file);
+      } catch (e) { 
       }
     });
   }
