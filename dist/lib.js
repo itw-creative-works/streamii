@@ -599,7 +599,7 @@ module.exports = function (mainOptions) {
     jetpack.dir('media/processed/video');
     jetpack.dir('media/uploads');
 
-    logger.log(`d`);
+    logger.log(``);
     logger.log(`============================================`);
     logger.log(`Streamii server has successfully started`);
     logger.log(`Streamii v${package.version}`);
