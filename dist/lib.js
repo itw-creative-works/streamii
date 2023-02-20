@@ -60,7 +60,7 @@ module.exports = function (mainOptions) {
     - https://trac.ffmpeg.org/wiki/Encode/YouTube
     - https://www.reddit.com/r/ffmpeg/comments/r1qwyy/best_streaming_settings_for_youtube/
   */
-  function startYouTubeStream() {
+  function startStream() {
     return new Promise(async function(resolve, reject) {    
       // Preprocess the audio files if they haven't been already
       if (!enoughTracksPreprocessed()) {
@@ -145,7 +145,7 @@ module.exports = function (mainOptions) {
           logger.error(`Restarting...`);
 
           setTimeout(function () {
-            startYouTubeStream();
+            startStream();
           }, 1000);
         }
       });
@@ -593,13 +593,15 @@ module.exports = function (mainOptions) {
     jetpack.dir('media/uploads');
 
     logger.info(`\n\n============================================`);
+    logger.info(`Streamii server has successfully started`);
+    logger.info(`Streamii v${package.version}}`);
     logger.info(`Server is listening on ${address}`);
     logger.info(`============================================`);
 
     // Randomize the tracklist and start the stream
-    startYouTubeStream()
+    startStream()
     .catch(e => {
-      logger.error(`Error starting YouTube stream: ${e}`)
+      logger.error(`Error starting the stream: ${e}`)
     })
 
     // Setup the tracklist interval
@@ -626,7 +628,7 @@ module.exports = function (mainOptions) {
       // Eventually make this more like every 24 hours
       setInterval(async () => {
         queue.add(downloadAssets)
-      }, 60000 * 10)
+      }, 60000 * 60 * 24)
 
       queue.add(downloadAssets)
 
