@@ -14,10 +14,11 @@ module.exports = function (mainOptions) {
   require('dotenv').config();
   const powertools = require('node-powertools');
   const package = require('../package.json');
-  const { Octokit } = require("@octokit/rest");
+  const { Octokit } = require('@octokit/rest');
   const octokit = new Octokit({
     auth: process.env.GH_TOKEN,
   });
+  const uuidv4 = require('uuid').v4;
   const Table = require('cli-table3');
   const chalk = require('chalk');
 
@@ -38,6 +39,7 @@ module.exports = function (mainOptions) {
     isStreaming: false,
     isDownloading: false,
     isProcessing: false,
+    streamId: null,
   }
   let tracklistInterval;
   
@@ -116,6 +118,8 @@ module.exports = function (mainOptions) {
 
       // console.log(`\n\n*** STARTING YOUTUBE STREAM ***`);
 
+      status.streamId = uuidv4();
+
       // Start the stream
       const ffmpegProcess = exec(cmd);
 
@@ -159,6 +163,8 @@ module.exports = function (mainOptions) {
           }, 1000);
         }
       });
+
+      logStatus();
 
       return resolve();
 
@@ -569,7 +575,8 @@ module.exports = function (mainOptions) {
     const currentTrack = getCurrentTrack();
 
     logger.log(
-      `\n`
+      `*** Streamii Status ***\n`
+      + `ID: ${status.streamId}\n`
       + `Runtime: ${format(process.uptime())}\n`
       + `Stream: ${status.isStreaming ? 'ON' : 'OFF'} ${status.isStreaming ? status.isStreaming : ''}\n`
       + `Preprocess: ${status.isProcessing ? 'ON' : 'OFF'} ${status.isProcessing ? status.isProcessing : ''}\n`

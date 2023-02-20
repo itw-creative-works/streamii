@@ -1,6 +1,6 @@
 {
   "name": "streamii",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Run a 24/7 livestream on YouTube, Twitch, or any streaming service",
   "main": "dist/index.js",
   "scripts": {
@@ -39,6 +39,7 @@
     "node-powertools": "^0.0.23",
     "ora": "^5.4.1",
     "unzipper": "^0.10.11",
+    "uuid": "^9.0.0",
     "wonderful-log": "^1.0.1"
   },
   "devDependencies": {
