@@ -120,6 +120,15 @@ module.exports = function (mainOptions) {
 
       status.streamId = uuidv4();
 
+      let statusLogged = false;
+
+      function _logStatus() {
+        if (!statusLogged) {
+          statusLogged = true;
+          logStatus();
+        }
+      }
+
       // Start the stream
       const ffmpegProcess = exec(cmd);
 
@@ -127,6 +136,8 @@ module.exports = function (mainOptions) {
         console.log(`STREAM:`, data);
 
         status.isStreaming = data;
+
+        _logStatus();
 
         // Log current audio track
         // if (data.includes('Input #1')) {
@@ -140,6 +151,8 @@ module.exports = function (mainOptions) {
         console.error(`STREAM:`, data);
 
         status.isStreaming = data;
+
+        _logStatus();
 
         // log current audio track
         // if (data.includes('Input #1')) {
