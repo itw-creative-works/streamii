@@ -697,7 +697,7 @@ module.exports = function (mainOptions) {
 
       setInterval(function() {
         logStatus()
-      }, 60000);
+      }, mainOptions.log.interval);
 
       // const table = new Table({
       //   head: [chalk.cyan.bold('Process'), chalk.cyan.bold('Status'), chalk.cyan.bold('Detail')],

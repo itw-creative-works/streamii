@@ -33,6 +33,9 @@
     options.assets.owner = options.assets.owner;
     options.assets.repo = options.assets.repo;
 
+    options.log = options.log || {};
+    options.log.interval = options.log.interval || 60000;
+
     self.options = options;
   };
 
