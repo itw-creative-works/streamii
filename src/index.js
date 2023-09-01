@@ -47,6 +47,5 @@
     return self;
   }
 
-
   return Streamii; // Enable if using UMD
 }));

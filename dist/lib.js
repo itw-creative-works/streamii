@@ -32,7 +32,7 @@ module.exports = function (mainOptions) {
     // worker: {
     //   timeout: 10000
     // },
-  });  
+  });
 
   const queue = powertools.queue();
   const status = {
@@ -42,7 +42,7 @@ module.exports = function (mainOptions) {
     streamId: null,
   }
   let tracklistInterval;
-  
+
   // Check mainOptions
   if (!mainOptions.streamURL) {
     throw new Error('No URL provided')
@@ -56,7 +56,7 @@ module.exports = function (mainOptions) {
     throw new Error('No GH_TOKEN provided')
   }
 
-  /* 
+  /*
     SOURCES:
     - Mostly from ChatGPT
     - https://superuser.com/questions/1640011/ffmpeg-loop-stream-of-several-audio-files-and-a-short-video
@@ -73,15 +73,17 @@ module.exports = function (mainOptions) {
     - https://www.reddit.com/r/ffmpeg/comments/r1qwyy/best_streaming_settings_for_youtube/
   */
   function startStream() {
-    return new Promise(async function(resolve, reject) {    
+    return new Promise(async function(resolve, reject) {
+      logger.log(`startStream():`);
+
       // Preprocess the audio files if they haven't been already
       if (!enoughTracksPreprocessed()) {
         queue.add(preprocess)
-      }  
+      }
 
       // Wait for the audio files to be preprocessed
       await powertools.poll(() => {
-        // console.log('Waiting for enough tracks to be preprocessed...');
+        logger.log('startStream(): Waiting for enough tracks to be preprocessed...');
 
         return enoughTracksPreprocessed()
       }, {interval: 500, timeout: 60000})
@@ -133,7 +135,7 @@ module.exports = function (mainOptions) {
       const ffmpegProcess = exec(cmd);
 
       ffmpegProcess.stdout.on('data', (data) => {
-        console.log(`STREAM:`, data);
+        logger.log(`startStream(): stream data`, data);
 
         status.isStreaming = data;
 
@@ -148,7 +150,7 @@ module.exports = function (mainOptions) {
       });
 
       ffmpegProcess.stderr.on('data', (data) => {
-        console.error(`STREAM:`, data);
+        logger.error(`startStream(): stream exited with error`, data);
 
         status.isStreaming = data;
 
@@ -159,11 +161,11 @@ module.exports = function (mainOptions) {
         //   const split = data.split('Input #1,');
         //   const track = split[1].split(',')[0].trim();
         //   console.log(`\n*** CURRENT TRACK: ${track} ***\n`);
-        // } 
+        // }
       });
 
       ffmpegProcess.on('close', (code) => {
-        logger.log(`STREAM: ffmpeg exited with code ${code}`);
+        logger.log(`startStream(): stream exited with code ${code}`);
 
         status.isStreaming = false;
 
@@ -207,14 +209,14 @@ module.exports = function (mainOptions) {
       // const repo = package.repository.url.split('/')[4].replace('.git', '');
 
       if (mainOptions.assets.fetch === false) {
-        logger.log('Skipping download of assets...');
+        logger.log('downloadAssets(): Skipping download of assets...');
         return resolve();
       }
 
-      logger.log(`Downloading assets ${mainOptions.assets.owner}, ${mainOptions.assets.repo}`);
+      logger.log(`downloadAssets(): Downloading assets ${mainOptions.assets.owner}, ${mainOptions.assets.repo}`);
 
       // Clear the uploadds directory
-      jetpack.remove('media/uploads');   
+      jetpack.remove('media/uploads');
 
       // Get the latest release from the GitHub API
       const release = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
@@ -229,7 +231,7 @@ module.exports = function (mainOptions) {
         const assetName = asset.name;
         const assetUrl = asset.browser_download_url;
 
-        logger.log(`Downloading asset: ${assetName}`);
+        logger.log(`downloadAssets(): Downloading asset: ${assetName}`);
 
         const assetPath = path.join('media', 'uploads', assetName);
         const assetDir = path.dirname(assetPath);
@@ -249,7 +251,7 @@ module.exports = function (mainOptions) {
           }
         });
 
-        logger.log(`Finished downloading asset: ${assetPath}`);
+        logger.log(`downloadAssets(): Finished downloading asset: ${assetPath}`);
 
         // Save ArrayBuffer to disk as a file
         const buffer = Buffer.from(response.data);
@@ -258,12 +260,12 @@ module.exports = function (mainOptions) {
         await unzipUploadsFolder();
 
         // Clear the uploadds directory
-        jetpack.remove('media/uploads');   
+        jetpack.remove('media/uploads');
 
         status.isDownloading = false;
 
         return resolve();
-      });    
+      });
     });
   }
 
@@ -276,14 +278,14 @@ module.exports = function (mainOptions) {
       let uploadCount = 0;
 
       // Clear the unprocessed directory
-      // jetpack.remove('media/unprocessed');    
+      // jetpack.remove('media/unprocessed');
 
       // logger.log('Unzipping uploads...', uploadFile);
 
       // Unzip the file
       const readStream = jetpack.createReadStream(uploadFile);
       await readStream.pipe(unzipper.Extract({ path: 'media/uploads' })).promise();
-      
+
       // Remove the zip
       jetpack.remove(uploadFile);
 
@@ -311,7 +313,7 @@ module.exports = function (mainOptions) {
         const newFile = path.join('media', 'unprocessed', subfolder, filename);
 
         uploadCount++;
-        
+
         // console.log('Moving file:', file, 'to', newFile);
         try {
           jetpack.move(file, newFile, { overwrite: false });
@@ -320,17 +322,17 @@ module.exports = function (mainOptions) {
         }
       });
 
-      // Clear the uploasd directory  
+      // Clear the uploasd directory
       // jetpack.remove(uploadPath);
-      
+
       // Preprocess the audio files
       await preprocess();
 
       // Randomize the tracklist
-      randomizeTracklist();    
+      randomizeTracklist();
 
       return resolve(uploadCount)
-    });  
+    });
   }
 
   function getVideoFile() {
@@ -371,7 +373,7 @@ module.exports = function (mainOptions) {
     const tracks = getTracklist();
 
     // console.log(`\n\n*** TRACKLIST (${tracks.length} tracks) ***`);
-    // console.log(tracks);  
+    // console.log(tracks);
   }
 
   function enoughTracksPreprocessed() {
@@ -451,7 +453,7 @@ module.exports = function (mainOptions) {
       `
       const saveTracklistInterval = setInterval(saveTracklist, 10000);
 
-      logger.log('Preprocessing audio files...');
+      logger.log('preprocess(): Preprocessing audio files...');
 
       function _resolve() {
         clearInterval(saveTracklistInterval);
@@ -460,7 +462,7 @@ module.exports = function (mainOptions) {
 
       if (getTracklist('unprocessed').length <= 0) {
         queue.add(downloadAssets)
-        
+
         return _resolve();
       }
 
@@ -476,23 +478,23 @@ module.exports = function (mainOptions) {
       const ffmpegProcess = exec(cmd);
 
       ffmpegProcess.stdout.on('data', (data) => {
-        console.log(`PROCESS:`, data);
-        
+        logger.log('preprocess(): Preprocessed data', data);
+
         status.isProcessing = data;
 
         saveTracklist();
       });
 
       ffmpegProcess.stderr.on('data', (data) => {
-        console.error(`PROCESS:`, data);
-        
+        logger.log('preprocess(): Preprocessed stderr', data);
+
         status.isProcessing = data;
 
         saveTracklist();
       });
 
       ffmpegProcess.on('close', (code) => {
-        logger.log(`PROCESS: ffmpeg exited wtih code ${code}`);
+        logger.log(`preprocess(): ffmpeg exited wtih code ${code}`, data);
 
         status.isProcessing = false;
 
@@ -503,14 +505,15 @@ module.exports = function (mainOptions) {
         // Save the tracklist
         saveTracklist();
 
-        // Complete      
+        // Complete
         return _resolve();
-      });    
+      });
     });
   }
 
   function saveTracklist() {
     // console.log('Saving tracklist...');
+    logger.log(`saveTracklist(): Saving tracklist...`);
 
     // Loop through processed audio files and rename them replacing any non-alphanumeric characters
     const audioFiles = jetpack.find('media/processed/audio', { matching: '*.m4a' });
@@ -532,7 +535,7 @@ module.exports = function (mainOptions) {
         .replace(/['"]+/g, '')
         // Remove anything thats not a number or letter or dash
         .replace(/[^a-zA-Z0-9-]/g, '')
-      
+
       if (newFilename !== parsed.name) {
         // rename the file and allow overwriting
         // console.log('Renaming', file, 'to', `${newFilename}${parsed.ext}`);
@@ -566,7 +569,7 @@ module.exports = function (mainOptions) {
 
       try {
         jetpack.remove(file);
-      } catch (e) { 
+      } catch (e) {
       }
     });
   }
@@ -581,7 +584,7 @@ module.exports = function (mainOptions) {
     var seconds = Math.floor(seconds % 60);
 
     return pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
-  }  
+  }
 
   function logStatus() {
     const tracklist = getTracklist();
@@ -595,7 +598,7 @@ module.exports = function (mainOptions) {
       + `Preprocess: ${status.isProcessing ? 'ON' : 'OFF'} ${status.isProcessing ? status.isProcessing : ''}\n`
       + `Download: ${status.isDownloading ? 'ON' : 'OFF'} ${status.isDownloading ? status.isDownloading : ''}\n`
       + `Tracklist: ${tracklist.length} tracks\n`
-    )      
+    )
   }
 
   // Serve the upload form
@@ -625,8 +628,8 @@ module.exports = function (mainOptions) {
           <h1 class="mb-3">Tracklist (${tracklist.length})</h1>
           <ul class="list-group">
             ${tracklist.map(track => `<li class="list-group-item">${track}</li>`).join('')}
-          </ul>        
-          
+          </ul>
+
         </body>
       </html>
     `;
@@ -671,7 +674,7 @@ module.exports = function (mainOptions) {
     if (!tracklistInterval) {
       // tracklistInterval = setInterval(() => {
       //   getTracklist();
-      // }, 60000);   
+      // }, 60000);
 
       // setTimeout(async () => {
       //   getTracklist();
@@ -707,16 +710,16 @@ module.exports = function (mainOptions) {
       // setInterval(function() {
         // const tracklist = getTracklist();
         // const currentTrack = getCurrentTrack();
-        
+
         // table.splice(0);
 
         // table.push(
         //   [
-        //     chalk.yellow('Stream'), 
-        //     status.isStreaming ? chalk.green('ON') : chalk.red('OFF'), 
+        //     chalk.yellow('Stream'),
+        //     status.isStreaming ? chalk.green('ON') : chalk.red('OFF'),
         //     `${status.isStreaming ? status.isStreaming : ''}`
         //       .replace(/= /g, '')
-        //       .replace(/ +/g, ' ')          
+        //       .replace(/ +/g, ' ')
         //   ],
         //   [chalk.yellow('Download'), status.isDownloading ? chalk.green('ON') : chalk.red('OFF'), `${status.isDownloading ? status.isDownloading : ''}`],
         //   [chalk.yellow('Preprocess'), status.isPreprocessing ? chalk.green('ON') : chalk.red('OFF'), `${status.isPreprocessing ? status.isPreprocessing : ''}`],
