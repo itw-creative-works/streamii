@@ -42,9 +42,9 @@
     options.stream.videoBitrate = options.stream.videoBitrate || 2000;
     options.stream.audioBitrate = options.stream.audioBitrate || 128;
     options.stream.title = options.stream.title || {};
-    options.stream.title.fontSize = options.stream.title.fontSize || 55;
+    options.stream.title.fontSize = options.stream.title.fontSize || 55; // 40
     options.stream.title.x = options.stream.title.x || '(w-tw)/2';
-    options.stream.title.y = options.stream.title.y || '(main_h-80)';
+    options.stream.title.y = options.stream.title.y || '(main_h-80)'; // (main_h-60)
 
     // Set assets options
     options.assets = options.assets || {};

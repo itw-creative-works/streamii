@@ -67,10 +67,10 @@ module.exports = function () {
       options: {
         fontfile: `assets/font/main.ttf`,
         textfile: `assets/title.txt`,
-        fontsize: options.stream.title.fontSize || 55, // 40
+        fontsize: options.stream.title.fontSize,
         fontcolor: 'white',
-        x: options.stream.title.x || '(w-tw)/2',
-        y: options.stream.title.y || '(main_h-80)', // (main_h-60)
+        x: options.stream.title.x,
+        y: options.stream.title.y,
         reload: 1,
         shadowcolor: 'black',
         shadowx: 2,
