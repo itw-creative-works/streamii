@@ -4,6 +4,7 @@ const jetpack = Manager.require('fs-jetpack');
 const powertools = Manager.require('node-powertools');
 const moment = Manager.require('moment');
 const { basename, normalize } = require('path');
+const path = require('path');
 const mm = require('music-metadata');
 
 const queueTemplate = jetpack.read(`${__dirname}/templates/queue.txt`);
@@ -38,6 +39,10 @@ module.exports = async function (type, name) {
     choice = powertools.random(files);
   }
 
+  if (!choice) {
+    throw new Error(`No ${type} found with, please ensure you have assets setup correctly.`);
+  }
+
   // console.log('====choice', choice);
 
   // Set paths
@@ -46,7 +51,9 @@ module.exports = async function (type, name) {
   // const queueFilePath = normalize(`${type}/${choice}`);
   const relativePath = `assets/${type}/${choice}`;
   const queueFilePath = `${type}/${choice}`;
-  const justName = choice.split('.').slice(0, -1).join('.');
+  const justName = path.basename(choice, path.extname(choice));
+
+  console.log('justName', justName);
 
   // Write queue
   jetpack.write(`${self.assets}/queue-${type}.txt`, powertools.template(queueTemplate, {file: queueFilePath, type}));

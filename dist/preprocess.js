@@ -12,6 +12,11 @@ module.exports = function () {
   jetpack.dir(`${self.assets}/video`);
   jetpack.dir(`${self.assets}/font`);
 
+  // Copy font if not exists
+  if (!jetpack.exists(`${self.assets}/font/main.ttf`)) {
+    jetpack.copy(`${__dirname}/templates/main.ttf`, `${self.assets}/font/main.ttf`);
+  }
+
   // Setup live files
   jetpack.write(`${self.assets}/title.txt`, 'Starting soon...');
 
