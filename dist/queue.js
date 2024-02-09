@@ -27,9 +27,16 @@ module.exports = async function (type, name) {
 
   // Get files
   const files = jetpack.find(`${self.assets}/${type}`, { matching: matchingPattern })
-    .map(file => basename(file));
-
-  // console.log('====files', files);
+    // Get just the file name
+    .map(file => basename(file))
+    // Remove any files with unsafe characters
+    .filter(file => {
+      if (file.match(/[^a-zA-Z0-9\.\-\_]/)) {
+        console.error(`⛔️  Skipping file "${file}" due to unsafe characters.`);
+        return false;
+      }
+      return true;
+    });
 
   let choice;
 
