@@ -1,11 +1,14 @@
-const jetpack = require('fs-jetpack');
-const powertools = require('node-powertools');
-const { resolve, basename, join } = require('path');
+// Libraries
+const Manager = new (require('backend-manager'));
+const jetpack = Manager.require('fs-jetpack');
+const powertools = Manager.require('node-powertools');
+const moment = Manager.require('moment');
+const { basename, normalize } = require('path');
 const mm = require('music-metadata');
-const moment = require('moment');
 
-const queueTemplate = jetpack.read(resolve(__dirname, 'templates/queue.txt'));
+const queueTemplate = jetpack.read(`${__dirname}/templates/queue.txt`);
 
+// Module
 module.exports = async function (type, name) {
   const self = this;
 
@@ -22,7 +25,7 @@ module.exports = async function (type, name) {
   const matchingPattern = fileTypes[type];
 
   // Get files
-  const files = jetpack.find(resolve(self.live, type), { matching: matchingPattern })
+  const files = jetpack.find(`${self.assets}/${type}`, { matching: matchingPattern })
     .map(file => basename(file));
 
   // console.log('====files', files);
@@ -38,13 +41,13 @@ module.exports = async function (type, name) {
   // console.log('====choice', choice);
 
   // Set paths
-  const fullPath = resolve(self.live, type, choice);
-  const queueFilePath = join(type, choice);
-  const relativePath = join('live', queueFilePath);
+  const fullPath = `${self.assets}/${type}/${choice}`;
+  const relativePath = normalize(`assets/${type}/${choice}`);
+  const queueFilePath = normalize(`${type}/${choice}`);
   const justName = choice.split('.').slice(0, -1).join('.');
 
   // Write queue
-  jetpack.write(resolve(self.live, `queue-${type}.txt`), powertools.template(queueTemplate, {file: queueFilePath, type}));
+  jetpack.write(`${self.assets}/queue-${type}.txt`, powertools.template(queueTemplate, {file: queueFilePath, type}));
 
   function emit(data) {
     self.emit(type, new Event(type, {cancelable: false}), data);

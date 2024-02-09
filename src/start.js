@@ -1,19 +1,20 @@
-// Requirements
+// Libraries
+const Manager = new (require('backend-manager'));
+const jetpack = Manager.require('fs-jetpack');
+const moment = Manager.require('moment');
+const fetch = Manager.require('wonderful-fetch');
+
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
-const fs = require('fs');
-const axios = require('axios');
 const { resolve } = require('path');
-const jetpack = require('fs-jetpack');
-const moment = require('moment');
-const { time } = require('console');
 
+// Module
 module.exports = function () {
   const self = this;
   const options = self.options;
 
   // Load env
-  require('dotenv').config();
+  Manager.require('dotenv').config();
 
   // Set properties
   ffmpeg.setFfmpegPath(ffmpegPath);
@@ -45,22 +46,42 @@ module.exports = function () {
   // Set properties
   self.status = 'started';
   self.ffmpeg = ffmpeg()
-    // Video input
-    // .addInput(resolve(self.live, 'video', 'background.gif'))
-    // Use the concat demuxer for dynamic video input
-    .addInput(resolve(self.live, 'queue-video.txt'))
+    // Video input #1 (concat demuxer for dynamic videos)
+    .addInput(resolve(`${self.assets}/queue-video.txt`))
     .inputFormat('concat')
-    .inputOption('-safe 0')
+    .inputOption('-safe 0') // Necessary if paths are absolute or have special characters
     // .addInputOption('-ignore_loop 0') // For gifs
     .addInputOption('-stream_loop -1') // For video files
     .addInputOption('-re') // Realtime
 
-    // Silent audio source
+    // Video settings
+    .size(options.stream.size)
+    .videoBitrate(options.stream.videoBitrate)
+    .fps(options.stream.fps)
+    .withAspect('16:9')
+    .videoCodec('libx264')
+    .videoFilters({
+      filter: 'drawtext',
+      options: {
+        fontfile: resolve(`${self.assets}/font/main.ttf`),
+        textfile: resolve(`${self.assets}/title.txt`),
+        fontsize: 40,
+        fontcolor: 'white',
+        x: '(w-tw)/2',
+        y: '(main_h-60)',
+        reload: 1,
+        shadowcolor: 'black',
+        shadowx: 2,
+        shadowy: 2,
+      }
+    })
+
+    // Audio input #1 (anullsrc for silent audio)
     .addInput('anullsrc')
     .inputFormat('lavfi')
 
-    // Use the concat demuxer for dynamic audio input
-    .addInput(resolve(self.live, 'queue-audio.txt'))
+    // Audio input #2 (concat demuxer for dynamic videos)
+    .addInput(resolve(`${self.assets}/queue-audio.txt`))
     .inputFormat('concat')
     .inputOption('-safe 0') // Necessary if paths are absolute or have special characters
 
@@ -73,28 +94,6 @@ module.exports = function () {
     // Audio settings
     .audioCodec('aac')
     .audioBitrate(options.stream.audioBitrate)
-
-    // Video settings
-    .size(options.stream.size)
-    .videoBitrate(options.stream.videoBitrate)
-    .fps(options.stream.fps)
-    .withAspect('16:9')
-    .videoCodec('libx264')
-    .videoFilters({
-      filter: 'drawtext',
-      options: {
-        fontfile: resolve(self.live, 'font', 'main.ttf'),
-        textfile: resolve(self.live, 'title.txt'),
-        fontsize: 40,
-        fontcolor: 'white',
-        x: '(w-tw)/2',
-        y: '(main_h-60)',
-        reload: 1,
-        shadowcolor: 'black',
-        shadowx: 2,
-        shadowy: 2,
-      }
-    })
 
     // Processing
     .addOptions([
@@ -149,14 +148,17 @@ module.exports = function () {
       console.error('🔴 Error stopping: ' + e.message);
     }
 
-    // Restart
-    if (options.autoRestart) {
-      self.restartCount++;
-      console.log(`🔁 Restarting (${self.restartCount} restarts)...`);
-      setTimeout(() => {
-        self.start();
-      }, 100);
+    // Quit if no auto restart
+    if (!options.autoRestart) {
+      return;
     }
+
+    // Restart
+    self.restartCount++;
+    console.log(`🔁 Restarting (${self.restartCount} restarts)...`);
+    setTimeout(() => {
+      self.start();
+    }, 100);
   })
 
   // Listen for end
@@ -179,19 +181,61 @@ module.exports = function () {
   clearInterval(self.currentAudioInterval);
   self.currentAudioInterval = setInterval(() => {
     const currentAudio = self.currentAudio;
-    if (currentAudio) {
-      const started = currentAudio.started;
-      const current = moment();
-      const duration = currentAudio.metadata.format.duration;
-      const elapsed = current.diff(started, 'seconds');
-
-      // Format time
-      const currentFormatted = moment.utc(elapsed * 1000).format('mm:ss');
-      const totalFormatted = moment.utc(duration * 1000).format('mm:ss');
-
-      // Log
-      console.log(`🔊 Now playing ${currentAudio.name} [${currentFormatted}/${totalFormatted}]: ${self.currentFFmpegLog}`);
+    if (!currentAudio) {
+      return
     }
+
+    const started = currentAudio.started;
+    const current = moment();
+    const duration = currentAudio.metadata.format.duration;
+    const elapsed = current.diff(started, 'seconds');
+
+    // Format time
+    const currentFormatted = moment.utc(elapsed * 1000).format('mm:ss');
+    const totalFormatted = moment.utc(duration * 1000).format('mm:ss');
+
+    // Log
+    console.log(`🔊 Now playing ${currentAudio.name} [${currentFormatted}/${totalFormatted}]: ${self.currentFFmpegLog}`);
+  }, 1000);
+
+  // Stream check
+  clearInterval(self.streamCheckInterval);
+  self.streamCheckInterval = setInterval(() => {
+    const ingest = options.stream.ingest;
+
+    if (self.status !== 'started') {
+      return;
+    }
+
+    if (!options.stream.ingest.includes('youtube')) {
+      return;
+    }
+
+    if (!process.env.YOUTUBE_KEY) {
+      return;
+    }
+
+    // This method is not reliable because it used 100 quota points per request, we only have 10,000 points per day
+    // https://www.youtube.com/channel/UC5CGKWyaa_SVWZbMUtiwuQA/live
+
+    // fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${options.youtube.channelId}&eventType=live&type=video&key=${process.env.YOUTUBE_KEY}`, {
+    //   method: 'GET',
+    //   response: 'json',
+    // })
+    // .then((data) => {
+    //   const live = data.items.length > 0;
+
+    //   console.log('---live', live);
+
+    //   if (live) {
+    //     console.log('🔴 Stream is live!');
+    //   } else {
+    //     console.log('🟢 Stream is not live!');
+    //   }
+    // })
+    // .catch((e) => {
+    //   console.error('🔴 Error checking stream:', e);
+    // })
   }, 1000);
 
   return self;

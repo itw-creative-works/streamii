@@ -1,27 +1,21 @@
-const jetpack = require('fs-jetpack');
-const powertools = require('node-powertools');
-const { resolve } = require('path');
+// Libraries
+const Manager = new (require('backend-manager'));
+const jetpack = Manager.require('fs-jetpack');
+const powertools = Manager.require('node-powertools');
 
+// Module
 module.exports = function () {
   const self = this;
 
   // Setup assets dir
-  jetpack.dir(resolve(self.assets, 'audio'));
-  jetpack.dir(resolve(self.assets, 'video'));
-  jetpack.dir(resolve(self.assets, 'font'));
+  jetpack.dir(`${self.assets}/audio`);
+  jetpack.dir(`${self.assets}/video`);
+  jetpack.dir(`${self.assets}/font`);
 
-  // Setup live dir
-  jetpack.remove(self.live);
-  jetpack.dir(resolve(self.live, 'audio'));
-  jetpack.dir(resolve(self.live, 'video'));
-  jetpack.dir(resolve(self.live, 'font'));
+  // Setup live files
+  jetpack.write(`${self.assets}/title.txt`, 'Starting soon...');
 
-  // Pre process files
-  jetpack.copy(resolve(self.assets, 'audio'), resolve(self.live, 'audio'), { overwrite: true });
-  jetpack.copy(resolve(self.assets, 'video'), resolve(self.live, 'video'), { overwrite: true });
-  jetpack.copy(resolve(self.assets, 'font'), resolve(self.live, 'font'), { overwrite: true });
-  jetpack.write(resolve(self.live, 'title.txt'), 'Starting soon...');
-
+  // Queue
   self.queue('audio');
   self.queue('video');
 

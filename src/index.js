@@ -23,11 +23,11 @@
     }
   }
 
+  const Manager = new (require('backend-manager'));
+  const moment = Manager.require('moment');
   const path = require('path');
-  const jetpack = require('fs-jetpack');
   const EventEmitter = require('events').EventEmitter;
   const util = require('util');
-  const moment = require('moment');
 
   function Streamii(options) {
     const self = this;
@@ -47,6 +47,10 @@
     options.assets.owner = options.assets.owner;
     options.assets.repo = options.assets.repo;
 
+    // Set youtube options
+    options.youtube = options.youtube || {};
+    options.youtube.channelId = options.youtube.channelId || '';
+
     // Set other options
     options.autoRestart = typeof options.autoRestart === 'undefined' ? true : options.autoRestart;
 
@@ -62,14 +66,17 @@
     self.status = 'stopped';
     self.ffmpeg = null;
     self.path = process.cwd();
-    self.assets = path.resolve(self.path, 'assets');
-    self.live = path.resolve(self.path, 'live');
+    self.assets = path.resolve(`${self.path}/assets`);
+    self.live = path.resolve(`${self.path}/live`);
 
     self.currentFFmpegLog = null;
 
-    self.currentAudio = null;
+    self.currentAudioInterval = null;
     self.audioSwitchInterval = null;
 
+    self.streamCheckInterval = null;
+
+    self.currentAudio = null;
     self.currentVideo = null;
 
     // Log interval

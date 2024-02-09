@@ -1,11 +1,14 @@
-const jetpack = require('fs-jetpack');
-const { resolve } = require('path');
+// Libraries
+const Manager = new (require('backend-manager'));
+
+// Module
+const jetpack = Manager.require('fs-jetpack');
 
 module.exports = async function (title) {
   const self = this;
 
   // Update
-  jetpack.write(resolve(self.live, 'title.txt'), title);
+  jetpack.write(`${self.assets}/title.txt`, title);
 
   return self;
 }

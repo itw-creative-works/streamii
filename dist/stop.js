@@ -1,3 +1,7 @@
+// Libraries
+const Manager = new (require('backend-manager'));
+
+// Module
 module.exports = function () {
   const self = this;
 

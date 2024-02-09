@@ -29,22 +29,12 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@octokit/rest": "^19.0.7",
-    "axios": "^0.21.1",
-    "chalk": "^4.1.2",
-    "dotenv": "^16.0.3",
-    "ejs": "^3.1.6",
-    "express": "^4.17.1",
+    "backend-manager": "^3.2.46",
     "fastify": "^4.13.0",
     "fluent-ffmpeg": "^2.1.2",
-    "fs-jetpack": "^5.1.0",
-    "moment": "^2.30.1",
     "music-metadata": "^7.14.0",
-    "node-os-utils": "^1.3.2",
-    "node-powertools": "^1.2.2",
     "nodemon": "^2.0.7",
-    "radio-stream": "^0.0.1",
     "unzipper": "^0.10.11",
-    "uuid": "^9.0.0",
     "wonderful-log": "^1.0.1"
   },
   "devDependencies": {
