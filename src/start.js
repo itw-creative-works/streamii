@@ -138,6 +138,10 @@ module.exports = function () {
 
     // Emit the 'started' event
     self.emit('start', new Event('start', {cancelable: false}));
+
+    // Queue
+    self.queue('audio');
+    self.queue('video');
   })
 
   // Listen for errors
@@ -178,6 +182,11 @@ module.exports = function () {
   self.ffmpeg.on('end', (stdout, stderr) => {
     console.log('🎉 Stream concluded!');
   })
+
+  // self.ffmpeg.on('progress', function(progress) {
+  //   console.log('Processing: ', progress);
+  // })
+
 
   // Not sure what this does
   self.ffmpeg.run();

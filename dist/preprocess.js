@@ -13,17 +13,25 @@ module.exports = function () {
   jetpack.dir(`${self.assets}/font`);
 
   // Copy font if not exists
-  if (!jetpack.exists(`${self.assets}/font/main.ttf`)) {
-    jetpack.copy(`${__dirname}/templates/main.ttf`, `${self.assets}/font/main.ttf`);
-  }
+  copyIfNotExists(`${__dirname}/templates/main.ttf`, `${self.assets}/font/main.ttf`);
+
+  // Copy buffer
+  copyIfNotExists(`${__dirname}/templates/buffer.mp3`, `${self.assets}/buffer.mp3`);
+  copyIfNotExists(`${__dirname}/templates/buffer.mp4`, `${self.assets}/buffer.mp4`);
 
   // Setup live files
   jetpack.write(`${self.assets}/title.txt`, 'Starting soon...');
 
-  // Queue
-  self.queue('audio');
-  self.queue('video');
+  // Write queue files iwht buffer while we wait for the first real queue
+  self.updateQueueFile('audio', 'buffer.mp3');
+  self.updateQueueFile('video', 'buffer.mp4');
 
   // Return
   return self;
+}
+
+function copyIfNotExists(source, destination) {
+  if (!jetpack.exists(destination)) {
+    jetpack.copy(source, destination);
+  }
 }

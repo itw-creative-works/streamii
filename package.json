@@ -1,6 +1,6 @@
 {
   "name": "streamii",
-  "version": "2.0.14",
+  "version": "2.0.15",
   "description": "Run a 24/7 livestream on YouTube, Twitch, or any streaming service",
   "main": "dist/index.js",
   "scripts": {

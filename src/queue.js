@@ -3,11 +3,8 @@ const Manager = new (require('backend-manager'));
 const jetpack = Manager.require('fs-jetpack');
 const powertools = Manager.require('node-powertools');
 const moment = Manager.require('moment');
-const { basename, normalize } = require('path');
-const path = require('path');
+const { basename, extname } = require('path');
 const mm = require('music-metadata');
-
-const queueTemplate = jetpack.read(`${__dirname}/templates/queue.txt`);
 
 // Module
 module.exports = async function (type, name) {
@@ -58,12 +55,10 @@ module.exports = async function (type, name) {
   // const queueFilePath = normalize(`${type}/${choice}`);
   const relativePath = `assets/${type}/${choice}`;
   const queueFilePath = `${type}/${choice}`;
-  const justName = path.basename(choice, path.extname(choice));
-
-  console.log('justName', justName);
+  const justName = basename(choice, extname(choice));
 
   // Write queue
-  jetpack.write(`${self.assets}/queue-${type}.txt`, powertools.template(queueTemplate, {file: queueFilePath, type}));
+  self.updateQueueFile(type, queueFilePath);
 
   function emit(data) {
     self.emit(type, new Event(type, {cancelable: false}), data);
@@ -89,8 +84,14 @@ module.exports = async function (type, name) {
     // Set interval for next queueing
     clearTimeout(self.audioSwitchInterval);
     self.audioSwitchInterval = setTimeout(() => {
-      self.queue();
+      self.queue('audio');
     }, duration * 1000);
+
+    // Reset back to buffer after 2 seconds
+    // This is so there is a buffer between songs to prevent audio and song title from being out of sync
+    setTimeout(() => {
+      self.updateQueueFile('audio', 'buffer.mp3');
+    }, 2000);
 
     // Write to title.txt for audio
     self.updateTitle(metadata.common.title || justName);

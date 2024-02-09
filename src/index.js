@@ -111,6 +111,7 @@
   Streamii.prototype.preprocess = require('./preprocess.js');
   Streamii.prototype.queue = require('./queue.js');
   Streamii.prototype.updateTitle = require('./updateTitle.js');
+  Streamii.prototype.updateQueueFile = require('./updateQueueFile.js');
 
   return Streamii; // Enable if using UMD
 }));
