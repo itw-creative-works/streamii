@@ -7,7 +7,7 @@ const jetpack = Manager.require('fs-jetpack');
 module.exports = async function (title) {
   const self = this;
 
-  // Update
+  // Update title file
   jetpack.write(`${self.assets}/title.txt`, title);
 
   return self;

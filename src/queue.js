@@ -51,8 +51,6 @@ module.exports = async function (type, name) {
 
   // Set paths
   const fullPath = `${self.assets}/${type}/${choice}`;
-  // const relativePath = normalize(`assets/${type}/${choice}`);
-  // const queueFilePath = normalize(`${type}/${choice}`);
   const relativePath = `assets/${type}/${choice}`;
   const queueFilePath = `${type}/${choice}`;
   const justName = basename(choice, extname(choice));

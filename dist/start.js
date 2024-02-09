@@ -29,6 +29,7 @@ module.exports = function () {
   }
 
   // Check assets options
+  // TODO: ADD AUTO-DOWNLOAD FROM GITHUB RELEASES
   // if (!mainOptions.assets.owner) {
   //   throw new Error('No owner provided')
   // } else if (!mainOptions.assets.repo) {
@@ -48,8 +49,6 @@ module.exports = function () {
   self.status = 'started';
   self.ffmpeg = ffmpeg()
     // Video input #1 (concat demuxer for dynamic videos)
-    // .addInput(resolve(`${self.assets}/queue-video.txt`))
-    // .addInput(`${self.assets}/queue-video.txt`)
     .addInput(`assets/queue-video.txt`)
     .inputFormat('concat')
     .inputOption('-safe 0') // Necessary if paths are absolute or have special characters
@@ -66,16 +65,12 @@ module.exports = function () {
     .videoFilters({
       filter: 'drawtext',
       options: {
-        // fontfile: resolve(`${self.assets}/font/main.ttf`),
-        // fontfile: `${self.assets}/font/main.ttf`,
         fontfile: `assets/font/main.ttf`,
-        // textfile: resolve(`${self.assets}/title.txt`),
-        // textfile: `${self.assets}/title.txt`,
         textfile: `assets/title.txt`,
-        fontsize: 40,
+        fontsize: options.stream.title.fontSize || 55, // 40
         fontcolor: 'white',
-        x: '(w-tw)/2',
-        y: '(main_h-60)',
+        x: options.stream.title.x || '(w-tw)/2',
+        y: options.stream.title.y || '(main_h-80)', // (main_h-60)
         reload: 1,
         shadowcolor: 'black',
         shadowx: 2,
@@ -88,8 +83,6 @@ module.exports = function () {
     .inputFormat('lavfi')
 
     // Audio input #2 (concat demuxer for dynamic videos)
-    // .addInput(resolve(`${self.assets}/queue-audio.txt`))
-    // .addInput(`${self.assets}/queue-audio.txt`)
     .addInput(`assets/queue-audio.txt`)
     .inputFormat('concat')
     .inputOption('-safe 0') // Necessary if paths are absolute or have special characters

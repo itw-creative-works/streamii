@@ -5,18 +5,20 @@ const Manager = new (require('backend-manager'));
 module.exports = function () {
   const self = this;
 
+  // Log
   console.log('🛑 Stopping...');
 
-  // self.ffmpeg.ffmpegProc.stdin.write('q');
-
+  // Kill ffmpeg
   try {
     self.ffmpeg.kill('SIGKILL');
   } catch (e) {
     console.error('🔴 Error stopping: ' + e.message);
   }
 
+  // Update status
   self.status = 'stopped';
 
+  // Log
   console.log('🛑 Stopped!');
 
   // Emit the 'stop' event

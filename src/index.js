@@ -41,6 +41,10 @@
     options.stream.fps = options.stream.fps || 30;
     options.stream.videoBitrate = options.stream.videoBitrate || 2000;
     options.stream.audioBitrate = options.stream.audioBitrate || 128;
+    options.stream.title = options.stream.title || {};
+    options.stream.title.fontSize = options.stream.title.fontSize || 55;
+    options.stream.title.x = options.stream.title.x || '(w-tw)/2';
+    options.stream.title.y = options.stream.title.y || '(main_h-80)';
 
     // Set assets options
     options.assets = options.assets || {};
@@ -106,6 +110,7 @@
   // Inherit from EventEmitter
   util.inherits(Streamii, EventEmitter);
 
+  // Install methods
   Streamii.prototype.start = require('./start.js');
   Streamii.prototype.stop = require('./stop.js');
   Streamii.prototype.preprocess = require('./preprocess.js');

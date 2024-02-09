@@ -9,6 +9,7 @@ const queueTemplate = jetpack.read(`${__dirname}/templates/queue.txt`);
 module.exports = async function (type, queueFilePath) {
   const self = this;
 
+  // Write queue file
   jetpack.write(`${self.assets}/queue-${type}.txt`, powertools.template(queueTemplate, {file: queueFilePath, type: type}));
 
   return self;
