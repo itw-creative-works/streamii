@@ -38,16 +38,50 @@ npm install streamii
 ```js
 const Streamii = require('streamii');
 const streamii = new Streamii({
-  // The URL to stream to
-  streamURL: 'rtmp://a.rtmp.youtube.com/live2',
-
-  // The repository where the assets are stored
-  assets: {
-    owner: 'your-github-username',
-    repo: 'your-github-repo',
+  stream: {
+    ingest: 'rtmp://x.rtmp.youtube.com/live2',
+    size: '1920x1080',
+    fps: 30,
+    videoBitrate: 1000,
+    audioBitrate: 128,
   },
+  // Not yet implemented
+  // assets: {
+  //   fetch: true,
+  //   owner: 'soundgrail',
+  //   repo: 'soundgrail-livestream-ai-ambient',
+  // },
+  youtube: {
+    channelId: '7Hhsk39gjh77r5j_cj8sJsiI',
+  },
+  log: {
+    interval: 10000,
+  },
+  autoRestart: true,
 });
 
+// Listen for events
+streamii.on('start', (event) => {
+  console.log('Started', event);
+});
+
+streamii.on('stop', (event) => {
+  console.log('Started', event);
+});
+
+streamii.on('error', (error) => {
+  console.log('Error: ', error);
+});
+
+streamii.on('audio', (event, data) => {
+  console.log('Audio: ', data);
+});
+
+streamii.on('video', (event, data) => {
+  console.log('Video: ', data);
+});
+
+// Start the stream
 streamii.stream();
 ```
 
@@ -59,7 +93,22 @@ STREAM_KEY='put_your_stream_key_here'
 GH_TOKEN='put_your_gh_token_here'
 ```
 
-#### 2. Upload assets
+#### 2. Setup assets
+Put your `video`, `audio`, and `font` assets in the `assets` folder of your project in this format:
+```
+assets
+├── audio
+│   ├── audio1.mp3
+│   ├── audio2.mp3
+│   └── audio3.mp3
+├── font
+│   └── main.ttf
+└── video
+    └── video.mp4
+```
+The module will automatically use the `assets` in the stream.
+
+<!-- #### 2. Upload assets
 Zip and upload your stream assets to the same GitHub repository as release assets that you configure when you call `new Streamii()`. Your assets should be in this format:
 ```
 .
@@ -70,12 +119,10 @@ Zip and upload your stream assets to the same GitHub repository as release asset
 └── video
     └── video.mp4
 ```
-The module will automatically download the release assets and use them in the stream.
+The module will automatically download the release assets and use them in the stream. -->
 
 ## TODO
-* Clean old audio files
-  * When downloading the `.zip` file, extract and make a list of the extracted files in the unprocessed folder called `uploads/contents.txt` with the names of the files. After the download completes, wait like 10 minutes (so current song can finish) and the loop through the unprocessed audio as well as the processed audio and remove any audio files that are not in the `contents.txt` as a way of clearing out any old audio files
-
+* Downlaod assets from github
 
 ## Final Words
 If you are still having difficulty, we would love for you to post a question to [the Streamii issues page](https://github.com/itw-creative-works/streamii/issues). It is much easier to answer questions that include your code and relevant files! So if you can provide them, we'd be extremely grateful (and more likely to help you find the answer!)

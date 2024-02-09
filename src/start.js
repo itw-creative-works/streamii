@@ -12,6 +12,7 @@ const { resolve } = require('path');
 module.exports = function () {
   const self = this;
   const options = self.options;
+  const restartTracker = moment();
 
   // Load env
   Manager.require('dotenv').config();
@@ -47,7 +48,9 @@ module.exports = function () {
   self.status = 'started';
   self.ffmpeg = ffmpeg()
     // Video input #1 (concat demuxer for dynamic videos)
-    .addInput(resolve(`${self.assets}/queue-video.txt`))
+    // .addInput(resolve(`${self.assets}/queue-video.txt`))
+    // .addInput(`${self.assets}/queue-video.txt`)
+    .addInput(`assets/queue-video.txt`)
     .inputFormat('concat')
     .inputOption('-safe 0') // Necessary if paths are absolute or have special characters
     // .addInputOption('-ignore_loop 0') // For gifs
@@ -63,8 +66,12 @@ module.exports = function () {
     .videoFilters({
       filter: 'drawtext',
       options: {
-        fontfile: resolve(`${self.assets}/font/main.ttf`),
-        textfile: resolve(`${self.assets}/title.txt`),
+        // fontfile: resolve(`${self.assets}/font/main.ttf`),
+        // fontfile: `${self.assets}/font/main.ttf`,
+        fontfile: `assets/font/main.ttf`,
+        // textfile: resolve(`${self.assets}/title.txt`),
+        // textfile: `${self.assets}/title.txt`,
+        textfile: `assets/title.txt`,
         fontsize: 40,
         fontcolor: 'white',
         x: '(w-tw)/2',
@@ -81,7 +88,9 @@ module.exports = function () {
     .inputFormat('lavfi')
 
     // Audio input #2 (concat demuxer for dynamic videos)
-    .addInput(resolve(`${self.assets}/queue-audio.txt`))
+    // .addInput(resolve(`${self.assets}/queue-audio.txt`))
+    // .addInput(`${self.assets}/queue-audio.txt`)
+    .addInput(`assets/queue-audio.txt`)
     .inputFormat('concat')
     .inputOption('-safe 0') // Necessary if paths are absolute or have special characters
 
@@ -134,6 +143,8 @@ module.exports = function () {
   // Listen for errors
   self.ffmpeg.on('error', (err, stdout, stderr) => {
     const error = new Error(err.message);
+    const msSinceStart = moment().diff(restartTracker, 'milliseconds');
+
     console.error('🔴 An error occurred: ', error);
     console.log('🔴 FFMPEG stdout: ' + stdout);
     console.log('🔴 FFMPEG stderr: ' + stderr);
@@ -154,11 +165,13 @@ module.exports = function () {
     }
 
     // Restart
+    // timeout should be 100 ms unless it was started less than 5 seconds ago
+    const timeout = msSinceStart < 5000 ? 5000 - msSinceStart : 100;
     self.restartCount++;
-    console.log(`🔁 Restarting (${self.restartCount} restarts)...`);
+    console.log(`🔁 Restarting (${self.restartCount} restarts) in ${timeout}ms...`);
     setTimeout(() => {
       self.start();
-    }, 100);
+    }, timeout);
   })
 
   // Listen for end
@@ -171,6 +184,8 @@ module.exports = function () {
 
   console.log('🚀 Started!');
   console.log('📁 Directory', jetpack.cwd());
+  console.log('📦 Assets', self.assets);
+  console.log('🎞 FFMPEG', ffmpegPath);
   console.log('🖥 Ingest: ' + options.stream.ingest);
   console.log('📏 Size: ' + options.stream.size);
   console.log('🎥 FPS: ' + options.stream.fps);
@@ -181,7 +196,7 @@ module.exports = function () {
   clearInterval(self.currentAudioInterval);
   self.currentAudioInterval = setInterval(() => {
     const currentAudio = self.currentAudio;
-    if (!currentAudio) {
+    if (!currentAudio || !self.currentFFmpegLog) {
       return
     }
 

@@ -66,8 +66,11 @@
     self.status = 'stopped';
     self.ffmpeg = null;
     self.path = process.cwd();
-    self.assets = path.resolve(`${self.path}/assets`);
-    self.live = path.resolve(`${self.path}/live`);
+    // self.assets = path.resolve(`${self.path}/assets`);
+    // self.live = path.resolve(`${self.path}/live`);
+    self.assets = `${self.path}/assets`.replace(/\\/g, '/');
+    self.live = `${self.path}/live`.replace(/\\/g, '/');
+
 
     self.currentFFmpegLog = null;
 
@@ -88,7 +91,7 @@
 
         const totalElapsedFormatted = `${Math.floor(duration.asDays())}d ${duration.hours()}h ${duration.minutes()}m ${duration.seconds()}s`;
 
-        console.log(`💎 Server has been online for ${totalElapsedFormatted}: restarts=${self.restartCount}`);
+        console.log(`💎 Server has been online for ${totalElapsedFormatted} (restarts=${self.restartCount})`);
       }
     }
     self.elapsedLogInterval = setInterval(function () {
