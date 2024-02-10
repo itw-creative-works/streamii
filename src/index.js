@@ -65,7 +65,8 @@
     self.options = options;
 
     // Set properties
-    self.startTime = new Date();
+    self.startTime = moment();
+    self.restartTrackerTime = moment();
     self.restartCount = 0;
     self.status = 'stopped';
     self.ffmpeg = null;
@@ -75,7 +76,6 @@
     self.assets = `${self.path}/assets`.replace(/\\/g, '/');
     self.live = `${self.path}/live`.replace(/\\/g, '/');
 
-
     self.currentFFmpegLog = null;
 
     self.currentAudioInterval = null;
@@ -83,20 +83,26 @@
 
     self.streamCheckInterval = null;
 
+    self.restartInterval = null;
+
+    self.updateQueueFileInterval = null;
+
     self.currentAudio = null;
     self.currentVideo = null;
 
     // Log interval
     function elapsed() {
-      if (self.status === 'started') {
-        const now = moment();
-        const startTime = moment(self.startTime);
-        const duration = moment.duration(now.diff(startTime));
-
-        const totalElapsedFormatted = `${Math.floor(duration.asDays())}d ${duration.hours()}h ${duration.minutes()}m ${duration.seconds()}s`;
-
-        console.log(`💎 Server has been online for ${totalElapsedFormatted} (restarts=${self.restartCount})`);
+      if (self.status !== 'started') {
+        return;
       }
+
+      const now = moment();
+      const startTime = moment(self.startTime);
+      const duration = moment.duration(now.diff(startTime));
+
+      const totalElapsedFormatted = `${Math.floor(duration.asDays())}d ${duration.hours()}h ${duration.minutes()}m ${duration.seconds()}s`;
+
+      console.log(`💎 Server has been online for ${totalElapsedFormatted} (restarts=${self.restartCount})`);
     }
     self.elapsedLogInterval = setInterval(function () {
       elapsed();
@@ -113,6 +119,7 @@
   // Install methods
   Streamii.prototype.start = require('./start.js');
   Streamii.prototype.stop = require('./stop.js');
+  Streamii.prototype.restart = require('./restart.js');
   Streamii.prototype.preprocess = require('./preprocess.js');
   Streamii.prototype.queue = require('./queue.js');
   Streamii.prototype.updateTitle = require('./updateTitle.js');

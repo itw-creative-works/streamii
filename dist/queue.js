@@ -87,7 +87,8 @@ module.exports = async function (type, name) {
 
     // Reset back to buffer after 2 seconds
     // This is so there is a buffer between songs to prevent audio and song title from being out of sync
-    setTimeout(() => {
+    clearTimeout(self.updateQueueFileInterval);
+    self.updateQueueFileInterval = setTimeout(() => {
       self.updateQueueFile('audio', 'buffer.mp3');
     }, 2000);
 

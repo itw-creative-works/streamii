@@ -12,7 +12,6 @@ const { resolve } = require('path');
 module.exports = function () {
   const self = this;
   const options = self.options;
-  const restartTracker = moment();
 
   // Load env
   Manager.require('dotenv').config();
@@ -43,10 +42,16 @@ module.exports = function () {
     throw new Error('No GH_TOKEN provided')
   }
 
+  // Stop
+  try {
+    self.ffmpeg.kill('SIGKILL');
+  } catch (e) {
+    // console.error('🔴 Error stopping: ' + e.message);
+  }
+
   console.log('🚀 Starting...');
 
   // Set properties
-  self.status = 'started';
   self.ffmpeg = ffmpeg()
     // Video input #1 (concat demuxer for dynamic videos)
     .addInput(`assets/queue-video.txt`)
@@ -129,6 +134,12 @@ module.exports = function () {
       console.log('📌 FFMPEG' + data);
     });
 
+    // Set restart tracker time for reset
+    self.restartTrackerTime = moment();
+
+    // Update status
+    self.status = 'started';
+
     // Emit the 'started' event
     self.emit('start', new Event('start', {cancelable: false}));
 
@@ -140,7 +151,6 @@ module.exports = function () {
   // Listen for errors
   self.ffmpeg.on('error', (err, stdout, stderr) => {
     const error = new Error(err.message);
-    const msSinceStart = moment().diff(restartTracker, 'milliseconds');
 
     console.error('🔴 An error occurred: ', error);
     console.log('🔴 FFMPEG stdout: ' + stdout);
@@ -162,13 +172,7 @@ module.exports = function () {
     }
 
     // Restart
-    // timeout should be 100 ms unless it was started less than 5 seconds ago
-    const timeout = msSinceStart < 5000 ? 5000 - msSinceStart : 100;
-    self.restartCount++;
-    console.log(`🔁 Restarting (${self.restartCount} restarts) in ${timeout}ms...`);
-    setTimeout(() => {
-      self.start();
-    }, timeout);
+    self.restart(error);
   })
 
   // Listen for end
@@ -180,6 +184,24 @@ module.exports = function () {
   //   console.log('Processing: ', progress);
   // })
 
+  // Listen for exit error
+  if (options.autoRestart) {
+    process.on('uncaughtException', (error) => {
+      const newError = new Error(error.message);
+
+      console.error('Uncaught Exception:', newError);
+
+      self.restart(newError);
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+      const newError = new Error(reason);
+
+      console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+
+      self.restart(newError);
+    });
+  }
 
   // Not sure what this does
   self.ffmpeg.run();
