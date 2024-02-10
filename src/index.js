@@ -56,7 +56,11 @@
     options.youtube.channelId = options.youtube.channelId || '';
 
     // Set other options
-    options.autoRestart = typeof options.autoRestart === 'undefined' ? true : options.autoRestart;
+    options.autoRestart = options.autoRestart || {};
+    options.autoRestart.enabled = typeof options.autoRestart.enabled === 'undefined' ? true : options.autoRestart.enabled;
+
+    options.checkStream = options.checkStream || {};
+    options.checkStream.enabled = typeof options.checkStream.enabled === 'undefined' ? false : options.checkStream.enabled;
 
     // Set log options
     options.log = options.log || {};
@@ -124,6 +128,7 @@
   Streamii.prototype.queue = require('./queue.js');
   Streamii.prototype.updateTitle = require('./updateTitle.js');
   Streamii.prototype.updateQueueFile = require('./updateQueueFile.js');
+  Streamii.prototype.logCurrent = require('./logCurrent.js');
 
   return Streamii; // Enable if using UMD
 }));

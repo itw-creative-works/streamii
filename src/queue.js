@@ -95,6 +95,15 @@ module.exports = async function (type, name) {
     // Write to title.txt for audio
     self.updateTitle(metadata.common.title || justName);
 
+    // Poll for current audio
+    powertools.poll(() => {
+      if (!self.currentAudio || !self.currentFFmpegLog) {
+        return false;
+      }
+      self.logCurrent();
+      return true;
+    }, {interval: 1000, timeout: 30000}).catch((e) => e);
+
     // Emit
     emit(self.currentAudio);
   } else {

@@ -167,7 +167,7 @@ module.exports = function () {
     }
 
     // Quit if no auto restart
-    if (!options.autoRestart) {
+    if (!options.autoRestart.enabled) {
       return;
     }
 
@@ -185,7 +185,7 @@ module.exports = function () {
   // })
 
   // Listen for exit error
-  if (options.autoRestart) {
+  if (options.autoRestart.enabled) {
     process.on('uncaughtException', (error) => {
       const newError = new Error(error.message);
 
@@ -219,63 +219,50 @@ module.exports = function () {
   // Log current song time
   clearInterval(self.currentAudioInterval);
   self.currentAudioInterval = setInterval(() => {
-    const currentAudio = self.currentAudio;
-    if (!currentAudio || !self.currentFFmpegLog) {
-      return
-    }
-
-    const started = currentAudio.started;
-    const current = moment();
-    const duration = currentAudio.metadata.format.duration;
-    const elapsed = current.diff(started, 'seconds');
-
-    // Format time
-    const currentFormatted = moment.utc(elapsed * 1000).format('mm:ss');
-    const totalFormatted = moment.utc(duration * 1000).format('mm:ss');
-
-    // Log
-    console.log(`🔊 Now playing ${currentAudio.name} [${currentFormatted}/${totalFormatted}]: ${self.currentFFmpegLog}`);
+    self.logCurrent();
   }, options.log.interval);
 
   // Stream check
-  clearInterval(self.streamCheckInterval);
-  self.streamCheckInterval = setInterval(() => {
-    const ingest = options.stream.ingest;
+  if (options.checkStream.enabled) {
+    clearTimeout(self.streamCheckInterval);
+    self.streamCheckInterval = setTimeout(() => {
+      const ingest = options.stream.ingest;
 
-    if (self.status !== 'started') {
-      return;
-    }
+      if (self.status !== 'started') {
+        return;
+      }
 
-    if (!options.stream.ingest.includes('youtube')) {
-      return;
-    }
+      if (!options.stream.ingest.includes('youtube')) {
+        return;
+      }
 
-    if (!process.env.YOUTUBE_KEY) {
-      return;
-    }
+      if (!process.env.YOUTUBE_KEY) {
+        return;
+      }
 
-    // This method is not reliable because it used 100 quota points per request, we only have 10,000 points per day
-    // https://www.youtube.com/channel/UC5CGKWyaa_SVWZbMUtiwuQA/live
+      // This method is not reliable because it used 100 quota points per request, we only have 10,000 points per day
+      // https://www.youtube.com/channel/UC5CGKWyaa_SVWZbMUtiwuQA/live
+      fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${options.youtube.channelId}&eventType=live&type=video&key=${process.env.YOUTUBE_KEY}`, {
+        method: 'GET',
+        response: 'json',
+      })
+      .then((data) => {
+        const live = data.items.length > 0;
 
-    // fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${options.youtube.channelId}&eventType=live&type=video&key=${process.env.YOUTUBE_KEY}`, {
-    //   method: 'GET',
-    //   response: 'json',
-    // })
-    // .then((data) => {
-    //   const live = data.items.length > 0;
+        // Log
+        if (live) {
+          console.log('✅ Stream is live!');
+        } else {
+          console.log('❌ Stream is not live! Need to restart...');
 
-    //   console.log('---live', live);
-
-    //   if (live) {
-    //     console.log('🔴 Stream is live!');
-    //   } else {
-    //     console.log('🟢 Stream is not live!');
-    //   }
-    // })
-    // .catch((e) => {
-    //   console.error('🔴 Error checking stream:', e);
-    // })
-  }, 1000);
+          self.restart(new Error('Stream is not live'));
+        }
+      })
+      .catch((e) => {
+        console.error('⛔️ Error checking stream:', e);
+      })
+    }, options.checkStream.timeout);
+  }
 
   return self;
 }
