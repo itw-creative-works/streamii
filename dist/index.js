@@ -60,7 +60,7 @@
 
     // Set log options
     options.log = options.log || {};
-    options.log.interval = options.log.interval || 60000;
+    options.log.interval = options.log.interval || 30000;
 
     self.options = options;
 

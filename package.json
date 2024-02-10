@@ -1,6 +1,6 @@
 {
   "name": "streamii",
-  "version": "2.0.17",
+  "version": "2.0.19",
   "description": "Run a 24/7 livestream on YouTube, Twitch, or any streaming service",
   "main": "dist/index.js",
   "scripts": {
@@ -34,8 +34,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "music-metadata": "^7.14.0",
     "nodemon": "^2.0.7",
-    "unzipper": "^0.10.11",
-    "wonderful-log": "^1.0.1"
+    "unzipper": "^0.10.11"
   },
   "devDependencies": {
     "mocha": "^8.4.0",

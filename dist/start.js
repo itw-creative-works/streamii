@@ -235,7 +235,7 @@ module.exports = function () {
 
     // Log
     console.log(`🔊 Now playing ${currentAudio.name} [${currentFormatted}/${totalFormatted}]: ${self.currentFFmpegLog}`);
-  }, 1000);
+  }, options.log.interval);
 
   // Stream check
   clearInterval(self.streamCheckInterval);
