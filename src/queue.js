@@ -69,7 +69,7 @@ module.exports = async function (type, name) {
     const durationFormatted = moment.utc(duration * 1000).format('mm:ss');
 
     // Log
-    console.log(`🎼 Queueing new audio ${choice} [${durationFormatted}]:`);
+    console.log(`🎼 Queueing new audio ${choice} [${durationFormatted}]:`, metadata);
 
     // Set current audio
     self.currentAudio = {
@@ -93,7 +93,10 @@ module.exports = async function (type, name) {
     }, 2000);
 
     // Write to title.txt for audio
-    self.updateTitle(metadata.common.title || justName);
+    metadata.common.title = metadata.common.title || justName;
+    metadata.common.artists = powertools.arrayify(metadata.common.artists || 'Unknown');
+    self.updateText('title', metadata.common.title);
+    self.updateText('subtitle', metadata.common.artists.join(', '));
 
     // Poll for current audio
     powertools.poll(() => {

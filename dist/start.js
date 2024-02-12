@@ -67,21 +67,6 @@ module.exports = function () {
     .fps(options.stream.fps)
     .withAspect('16:9')
     .videoCodec('libx264')
-    .videoFilters({
-      filter: 'drawtext',
-      options: {
-        fontfile: getUsableFontFile(),
-        textfile: `assets/title.txt`,
-        fontsize: options.stream.title.fontSize,
-        fontcolor: 'white',
-        x: options.stream.title.x,
-        y: options.stream.title.y,
-        reload: 1,
-        shadowcolor: 'black',
-        shadowx: 2,
-        shadowy: 2,
-      }
-    })
 
     // Audio input #1 (anullsrc for silent audio)
     .addInput('anullsrc')
@@ -117,6 +102,44 @@ module.exports = function () {
     // Output
     .toFormat('flv')
     .output(`${options.stream.ingest}/${process.env.STREAM_KEY}`)
+
+  // Add title
+  if (options.stream.title.enabled) {
+    self.ffmpeg.videoFilters({
+      filter: 'drawtext',
+      options: {
+        fontfile: getUsableFontFile('title'),
+        textfile: `assets/title.txt`,
+        fontsize: options.stream.title.fontSize,
+        fontcolor: 'white',
+        x: options.stream.title.x,
+        y: options.stream.title.y,
+        reload: 1,
+        shadowcolor: 'black',
+        shadowx: options.stream.title.shadow.x,
+        shadowy: options.stream.title.shadow.y,
+      }
+    })
+  }
+
+  // Add subtitle
+  if (options.stream.subtitle.enabled) {
+    self.ffmpeg.videoFilters({
+      filter: 'drawtext',
+      options: {
+        fontfile: getUsableFontFile('subtitle'),
+        textfile: `assets/subtitle.txt`,
+        fontsize: options.stream.subtitle.fontSize,
+        fontcolor: 'white',
+        x: options.stream.subtitle.x,
+        y: options.stream.subtitle.y,
+        reload: 1,
+        shadowcolor: 'black',
+        shadowx: options.stream.subtitle.shadow.x,
+        shadowy: options.stream.subtitle.shadow.y,
+      }
+    })
+  }
 
   // Listen for events
   self.ffmpeg.on('start', (cmd) => {
@@ -267,9 +290,9 @@ module.exports = function () {
   return self;
 }
 
-function getUsableFontFile() {
-  const userPath = resolve('assets/font/main.ttf');
-  const templatePath = resolve(__dirname, 'templates/main.ttf');
+function getUsableFontFile(type) {
+  const userPath = resolve(`assets/font/${type}.ttf`);
+  const templatePath = resolve(__dirname, `templates/${type}.ttf`);
   const exists = jetpack.exists(userPath);
 
   if (exists) {

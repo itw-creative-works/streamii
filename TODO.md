@@ -37,7 +37,7 @@ BUT it should not clear the live file that's playing, which can be seen from sel
   //   .videoFilters({
   //     filter: 'drawtext',
   //     options: {
-  //       fontfile: resolve(self.live, 'font', 'main.ttf'),
+  //       fontfile: resolve(self.live, 'font', 'title.ttf'),
   //       textfile: resolve(self.live, 'title.txt'),
   //       fontsize: 40,
   //       fontcolor: 'white',

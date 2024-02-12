@@ -41,10 +41,28 @@
     options.stream.fps = options.stream.fps || 30;
     options.stream.videoBitrate = options.stream.videoBitrate || 2000;
     options.stream.audioBitrate = options.stream.audioBitrate || 128;
+
     options.stream.title = options.stream.title || {};
-    options.stream.title.fontSize = options.stream.title.fontSize || 55; // 40
-    options.stream.title.x = options.stream.title.x || '(w-tw)/2';
-    options.stream.title.y = options.stream.title.y || '(main_h-80)'; // (main_h-60)
+    options.stream.title.enabled = typeof options.stream.title.enabled === 'undefined' ? true : options.stream.title.enabled;
+    options.stream.title.fontSize = options.stream.title.fontSize || 40; // 40
+    // options.stream.title.x = options.stream.title.x || '(w-tw)/2';
+    // options.stream.title.y = options.stream.title.y || '(main_h-80)'; // (main_h-60)
+    options.stream.title.x = options.stream.title.x || 20;
+    options.stream.title.y = options.stream.title.y || 20; // (main_h-60)
+    options.stream.title.shadow = options.stream.title.shadow || {};
+    options.stream.title.shadow.x = options.stream.title.shadow.x || 2;
+    options.stream.title.shadow.y = options.stream.title.shadow.y || 2;
+
+    options.stream.subtitle = options.stream.subtitle || {};
+    options.stream.subtitle.enabled = typeof options.stream.subtitle.enabled === 'undefined' ? true : options.stream.subtitle.enabled;
+    options.stream.subtitle.fontSize = options.stream.subtitle.fontSize || 30;
+    // options.stream.subtitle.x = options.stream.subtitle.x || '(w-tw)/2';
+    // options.stream.subtitle.y = options.stream.subtitle.y || '(main_h-20)';
+    options.stream.subtitle.x = options.stream.subtitle.x || 20;
+    options.stream.subtitle.y = options.stream.subtitle.y || 60;
+    options.stream.subtitle.shadow = options.stream.subtitle.shadow || {};
+    options.stream.subtitle.shadow.x = options.stream.subtitle.shadow.x || 2;
+    options.stream.subtitle.shadow.y = options.stream.subtitle.shadow.y || 2;
 
     // Set assets options
     options.assets = options.assets || {};
@@ -126,7 +144,7 @@
   Streamii.prototype.restart = require('./restart.js');
   Streamii.prototype.preprocess = require('./preprocess.js');
   Streamii.prototype.queue = require('./queue.js');
-  Streamii.prototype.updateTitle = require('./updateTitle.js');
+  Streamii.prototype.updateText = require('./updateText.js');
   Streamii.prototype.updateQueueFile = require('./updateQueueFile.js');
   Streamii.prototype.logCurrent = require('./logCurrent.js');
 

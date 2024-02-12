@@ -102,7 +102,7 @@ assets
 │   ├── audio2.mp3
 │   └── audio3.mp3
 ├── font
-│   └── main.ttf
+│   └── title.ttf
 └── video
     └── video.mp4
 ```

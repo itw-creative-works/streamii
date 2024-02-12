@@ -13,7 +13,7 @@ module.exports = function () {
   jetpack.dir(`${self.assets}/font`);
 
   // Copy font if not exists
-  // copyIfNotExists(`${__dirname}/templates/main.ttf`, `${self.assets}/font/main.ttf`);
+  // copyIfNotExists(`${__dirname}/templates/title.ttf`, `${self.assets}/font/title.ttf`);
 
   // Copy buffer
   copyIfNotExists(`${__dirname}/templates/buffer.mp3`, `${self.assets}/buffer.mp3`);
@@ -21,6 +21,7 @@ module.exports = function () {
 
   // Setup live files
   jetpack.write(`${self.assets}/title.txt`, 'Starting soon...');
+  jetpack.write(`${self.assets}/subtitle.txt`, '');
 
   // Write queue files iwht buffer while we wait for the first real queue
   self.updateQueueFile('audio', 'buffer.mp3');
