@@ -70,7 +70,7 @@ module.exports = function () {
     .videoFilters({
       filter: 'drawtext',
       options: {
-        fontfile: `assets/font/main.ttf`,
+        fontfile: getUsableFontFile(),
         textfile: `assets/title.txt`,
         fontsize: options.stream.title.fontSize,
         fontcolor: 'white',
@@ -265,4 +265,16 @@ module.exports = function () {
   }
 
   return self;
+}
+
+function getUsableFontFile() {
+  const userPath = resolve('assets/font/main.ttf');
+  const templatePath = resolve(__dirname, 'templates/main.ttf');
+  const exists = jetpack.exists(userPath);
+
+  if (exists) {
+    return userPath;
+  } else {
+    return templatePath;
+  }
 }
