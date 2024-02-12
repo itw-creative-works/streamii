@@ -291,8 +291,8 @@ module.exports = function () {
 }
 
 function getUsableFontFile(type) {
-  const userPath = resolve(`assets/font/${type}.ttf`);
-  const templatePath = resolve(__dirname, `templates/${type}.ttf`);
+  const userPath = `assets/font/${type}.ttf`;
+  const templatePath = `node_modules/streamii/dist/templates/${type}.ttf`;
   const exists = jetpack.exists(userPath);
 
   if (exists) {
