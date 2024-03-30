@@ -16,11 +16,11 @@ module.exports = function () {
   // Load env
   Manager.require('dotenv').config();
 
-  // Set properties
+  // Setup ffmpeg
   ffmpeg.setFfmpegPath(ffmpegPath);
 
-  // Preprocess
-  self.preprocess();
+  // Prepare
+  self.prepare();
 
   // Check main options
   if (!options.stream.ingest) {

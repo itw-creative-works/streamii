@@ -98,6 +98,13 @@
     self.assets = `${self.path}/assets`.replace(/\\/g, '/');
     self.live = `${self.path}/live`.replace(/\\/g, '/');
 
+    // Define file type patterns for audio and video
+    self.acceptableFileTypes = {
+      audio: ['*.mp3', '*.wav', '*.aac', '*.aif'], // Add more audio types as needed
+      video: ['*.gif', '*.mp4', '*.avi'] // Add more video types as needed
+    };
+    self.acceptableFilenameRegex = /[^a-zA-Z0-9\.\-\_]/;
+
     self.currentFFmpegLog = null;
 
     self.currentAudioInterval = null;
@@ -142,6 +149,7 @@
   Streamii.prototype.start = require('./start.js');
   Streamii.prototype.stop = require('./stop.js');
   Streamii.prototype.restart = require('./restart.js');
+  Streamii.prototype.prepare = require('./prepare.js');
   Streamii.prototype.preprocess = require('./preprocess.js');
   Streamii.prototype.queue = require('./queue.js');
   Streamii.prototype.updateText = require('./updateText.js');

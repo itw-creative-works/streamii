@@ -13,14 +13,8 @@ module.exports = async function (type, name) {
   name = name || '';
   type = type || 'audio';
 
-  // Define file type patterns for audio and video
-  const fileTypes = {
-    audio: ['*.mp3', '*.wav', '*.aac', '*.aif'], // Add more audio types as needed
-    video: ['*.gif', '*.mp4', '*.avi'] // Add more video types as needed
-  };
-
   // Build the matching pattern based on the type
-  const matchingPattern = fileTypes[type];
+  const matchingPattern = self.acceptableFileTypes[type];
 
   // Get files
   const files = jetpack.find(`${self.assets}/${type}`, { matching: matchingPattern })
@@ -28,7 +22,7 @@ module.exports = async function (type, name) {
     .map(file => basename(file))
     // Remove any files with unsafe characters
     .filter(file => {
-      if (file.match(/[^a-zA-Z0-9\.\-\_]/)) {
+      if (file.match(self.acceptableFilenameRegex)) {
         console.error(`⛔️  Skipping file "${file}" due to unsafe characters.`);
         return false;
       }
@@ -90,7 +84,8 @@ module.exports = async function (type, name) {
     clearTimeout(self.updateQueueFileInterval);
     self.updateQueueFileInterval = setTimeout(() => {
       self.updateQueueFile('audio', 'buffer.mp3');
-    }, 2000);
+    // }, 2000);
+    }, 10000);
 
     // Write to title.txt for audio
     metadata.common.title = metadata.common.title || justName;

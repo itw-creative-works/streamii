@@ -2,37 +2,78 @@
 const Manager = new (require('backend-manager'));
 const jetpack = Manager.require('fs-jetpack');
 const powertools = Manager.require('node-powertools');
+const { basename, extname } = require('path');
+
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
 
 // Module
 module.exports = function () {
   const self = this;
 
-  // Setup assets dir
-  jetpack.dir(`${self.assets}/audio`);
-  jetpack.dir(`${self.assets}/video`);
-  jetpack.dir(`${self.assets}/font`);
+  return new Promise(function(resolve, reject) {
+    // Setup ffmpeg
+    ffmpeg.setFfmpegPath(ffmpegPath);
 
-  // Copy font if not exists
-  // copyIfNotExists(`${__dirname}/templates/title.ttf`, `${self.assets}/font/title.ttf`);
+    // Build the matching pattern based on the type
+    const matchingPattern = self.acceptableFileTypes.video;
 
-  // Copy buffer
-  copyIfNotExists(`${__dirname}/templates/buffer.mp3`, `${self.assets}/buffer.mp3`);
-  copyIfNotExists(`${__dirname}/templates/buffer.mp4`, `${self.assets}/buffer.mp4`);
+    // Loop through all video files and remove the audio track using ffmpeg
+    const files = jetpack.find(`${self.assets}/video`, {matching: matchingPattern})
+    .filter((file) => {
+      const name = basename(file);
 
-  // Setup live files
-  jetpack.write(`${self.assets}/title.txt`, 'Starting soon...');
-  jetpack.write(`${self.assets}/subtitle.txt`, '');
+      if (name.match(self.acceptableFilenameRegex)) {
+        console.error(`⛔️  Skipping file "${name}" due to unsafe characters.`);
+        return false;
+      }
+      return true;
+    });
 
-  // Write queue files iwht buffer while we wait for the first real queue
-  self.updateQueueFile('audio', 'buffer.mp3');
-  self.updateQueueFile('video', 'buffer.mp4');
+    // Keep track of all operations
+    const operations = [];
 
-  // Return
-  return self;
-}
+    // Loop through all video files and remvoe the audio track using ffmpeg
+    const promises = files.map((file) => {
+      const name = basename(file);
+      const output = file.replace(`/video/`, `/video/@na-`);
 
-function copyIfNotExists(source, destination) {
-  if (!jetpack.exists(destination)) {
-    jetpack.copy(source, destination);
-  }
+      // Log
+      console.log('🔊 Removing audio input', file);
+      console.log('🔊 Removing audio output', output);
+
+      // Remove audio
+      return new Promise((resolve, reject) => {
+        ffmpeg(file)
+          .output(output)
+          .noAudio()
+          .on('end', () => {
+            console.log('✅ Done:', output);
+
+            // Remove old file
+            jetpack.remove(file);
+
+            // Rename new file
+            jetpack.rename(output, name);
+
+            // Resolve
+            resolve();
+          })
+          .on('error', (err) => {
+            console.log('🔴 Error:', err);
+            reject(err);
+          })
+          .run();
+      });
+    });
+
+    // Resolve
+    Promise.all(promises)
+      .then(() => {
+        console.log('✅ Done with all preprocessing!');
+
+        return resolve();
+      })
+      .catch((e) => reject(e));
+  });
 }
