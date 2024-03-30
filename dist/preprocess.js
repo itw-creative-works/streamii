@@ -36,7 +36,7 @@ module.exports = function () {
     // Loop through all video files and remvoe the audio track using ffmpeg
     const promises = files.map((file) => {
       const name = basename(file);
-      const output = file.replace(`/video/`, `/video/@na-`);
+      const output = file.replace(name, `@na-${name}`);
 
       // Log
       console.log('🔊 Removing audio input', file);
