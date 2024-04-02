@@ -30,9 +30,6 @@ module.exports = function () {
       return true;
     });
 
-    // Keep track of all operations
-    const operations = [];
-
     // Loop through all video files and remvoe the audio track using ffmpeg
     const promises = files.map((file) => {
       const name = basename(file);

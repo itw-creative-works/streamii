@@ -10,8 +10,9 @@ const mm = require('music-metadata');
 module.exports = async function (type, name) {
   const self = this;
 
-  name = name || '';
   type = type || 'audio';
+  name = (name || '');
+  name = basename(name, extname(name).toLowerCase());
 
   // Build the matching pattern based on the type
   const matchingPattern = self.acceptableFileTypes[type];
@@ -32,13 +33,17 @@ module.exports = async function (type, name) {
   let choice;
 
   if (name) {
-    choice = files.find((file) => file.includes(name));
+    // choice = files.find((file) => file.includes(name));
+    choice = files.find((file) => {
+      return basename(file, extname(file)).toLowerCase() === name;
+    });
   } else {
     choice = powertools.random(files);
   }
 
   if (!choice) {
-    throw new Error(`No ${type} found with, please ensure you have assets setup correctly.`);
+    console.error('Files', files)
+    throw new Error(`No ${type} found with name=${name}, please ensure you have assets setup correctly.`);
   }
 
   // console.log('====choice', choice);
