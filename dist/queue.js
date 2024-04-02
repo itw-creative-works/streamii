@@ -12,7 +12,7 @@ module.exports = async function (type, name) {
 
   type = type || 'audio';
   name = (name || '');
-  name = basename(name, extname(name).toLowerCase());
+  name = basename(name, extname(name)).toLowerCase();
 
   // Build the matching pattern based on the type
   const matchingPattern = self.acceptableFileTypes[type];
@@ -35,7 +35,8 @@ module.exports = async function (type, name) {
   if (name) {
     // choice = files.find((file) => file.includes(name));
     choice = files.find((file) => {
-      return basename(file, extname(file)).toLowerCase() === name;
+      const extensionlessName = basename(file, extname(file)).toLowerCase();
+      return extensionlessName === name;
     });
   } else {
     choice = powertools.random(files);
