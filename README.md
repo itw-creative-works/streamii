@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://cdn.itwcreativeworks.com/assets/itw-creative-works/images/logo/itw-creative-works-brandmark-black-x.svg">
+  <a href="https://itwcreativeworks.com">
     <img src="https://cdn.itwcreativeworks.com/assets/itw-creative-works/images/logo/itw-creative-works-brandmark-black-x.svg" width="100px">
   </a>
 </p>
@@ -24,12 +24,12 @@
   <strong>Streamii</strong> is an NPM module for running a 24/7 livestream on YouTube, Twitch, or any streaming service
 </p>
 
-## Features
+## 🦄 Features
 * Just `require` and you're good to go
 * Stream 24/7 to YouTube, Twitch, etc
 
-## Install Streamii
-### Install via npm
+## 📦 Install Streamii
+### Option 1: Install via npm
 Install with npm if you plan to use **Streamii** in a Node.js project or in the browser.
 ```shell
 npm install streamii
@@ -121,13 +121,13 @@ Zip and upload your stream assets to the same GitHub repository as release asset
 ```
 The module will automatically download the release assets and use them in the stream. -->
 
-## TODO
+## 🧩 TODO
 * Downlaod assets from github
 
-## Final Words
+## 🗨️ Final Words
 If you are still having difficulty, we would love for you to post a question to [the Streamii issues page](https://github.com/itw-creative-works/streamii/issues). It is much easier to answer questions that include your code and relevant files! So if you can provide them, we'd be extremely grateful (and more likely to help you find the answer!)
 
-## Projects Using this Library
+## 📚 Projects Using this Library
 [SoundGrail Music App](https://app.soundgrail.com/): A resource for producers, musicians, and DJs. <br>
 
 Ask us to have your project listed! :)
